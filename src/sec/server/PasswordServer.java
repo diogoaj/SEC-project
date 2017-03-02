@@ -32,7 +32,7 @@ public class PasswordServer implements InterfaceRMI{
 			Registry registry = LocateRegistry.getRegistry();
 			registry.bind("Interface", stub);
 			
-			System.out.println("Server banana");
+			System.out.println("Server ready");
 		} catch(Exception e){
 			System.err.println("Server exception: " + e.toString());
 			e.printStackTrace();
