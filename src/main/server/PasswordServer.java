@@ -7,23 +7,22 @@ import java.rmi.server.UnicastRemoteObject;
 import java.security.Key;
 
 public class PasswordServer implements InterfaceRMI{
-
-	@Override
+	
 	public void register(Key publicKey) throws RemoteException {
 		// TODO Auto-generated method stub
+		
 	}
 
-	@Override
 	public void put(Key publicKey, byte[] domain, byte[] username, byte[] password) throws RemoteException {
 		// TODO Auto-generated method stub
+		
 	}
 
-	@Override
 	public byte[] get(Key publicKey, byte[] domain, byte[] username) throws RemoteException {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
 	public static void main(String[] args) {
 		try{
 			PasswordServer s = new PasswordServer();
@@ -38,6 +37,5 @@ public class PasswordServer implements InterfaceRMI{
 			e.printStackTrace();
 		}
 	}
-
 
 }
