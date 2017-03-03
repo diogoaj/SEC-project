@@ -6,7 +6,7 @@ public class Client {
 	public static void main(String[] args) {
 		
 		try {
-        	Registry registry = LocateRegistry.getRegistry("localhost");
+        	Registry registry = LocateRegistry.getRegistry(8000);
         	InterfaceRMI stub = (InterfaceRMI) registry.lookup("Interface");
         	stub.register(null);
         	
