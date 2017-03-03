@@ -1,5 +1,3 @@
-package main.interfaces;
-
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.security.Key;

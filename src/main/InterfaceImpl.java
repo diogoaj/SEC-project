@@ -1,9 +1,5 @@
-package main.server;
-
 import java.rmi.RemoteException;
 import java.security.Key;
-
-import main.interfaces.InterfaceRMI;
 
 public class InterfaceImpl implements InterfaceRMI{
 

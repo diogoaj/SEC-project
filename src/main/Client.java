@@ -1,7 +1,4 @@
-package main.client;
-
 import java.rmi.registry.Registry;
-import main.interfaces.InterfaceRMI;
 import java.rmi.registry.LocateRegistry;
 
 public class Client {
