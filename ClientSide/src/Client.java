@@ -1,14 +1,18 @@
-import java.rmi.registry.Registry;
-import java.rmi.registry.LocateRegistry;
+import java.security.KeyStore;
+import java.io.FileInputStream;
+import java.security.PrivateKey;
 
 public class Client {
 
 	public static void main(String[] args) {
 		
 		try {
-        	Registry registry = LocateRegistry.getRegistry(8000);
-        	InterfaceRMI stub = (InterfaceRMI) registry.lookup("Interface");
-        	stub.register(null);
+			KeyStore ks = KeyStore.getInstance("JKS");
+        	API library = new API();
+        	library.init(ks, "banana");
+        	
+        	//ks.getCertificate("clientkeystore").getPublicKey()
+        	//(PrivateKey)ks.getKey("clientkeystore", "banana".toCharArray())
         	
         } catch (Exception e) {
         	System.err.println("Client exception: " + e.toString());
