@@ -9,12 +9,12 @@ public class API {
 	private String password;
 	private InterfaceRMI stub;
 	
-	public void init(KeyStore key, String pass){
+	public void init(KeyStore key, String id, String pass){
 		keyStore = key;
 		password = pass;
 				
 		try{
-			keyStore.load(new FileInputStream("./keystore.jks"), password.toCharArray());
+			keyStore.load(new FileInputStream("./keystore_" + id +".jks"), password.toCharArray());
 			Registry registry = LocateRegistry.getRegistry(8000);
 	    	stub = (InterfaceRMI) registry.lookup("Interface");
 		}
@@ -33,7 +33,7 @@ public class API {
 	}
 	
 	public byte[] retrieve_password(byte[] domain, byte[] username){
-		return null;
+		return "dummy".getBytes();
 	}
 	
 	public void close(){
