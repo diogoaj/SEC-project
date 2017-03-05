@@ -1,6 +1,7 @@
 package business;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -12,8 +13,21 @@ public class PasswordManager {
 	
 	private List<User> users;
 	
+	public PasswordManager(){
+		if(users == null){
+			users = new ArrayList<User>();
+		}
+	}
+	
 	public void addUser(User user){
+		for(User u : users){
+			if (u.getKey().equals(user.getKey())){
+				System.out.println("User already exists!");
+				return;
+			}
+		}
 		users.add(user);
+		saveData();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -24,6 +38,8 @@ public class PasswordManager {
 			users = (ArrayList<User>)in.readObject();
 			in.close();
 			fileIn.close();
+		}catch(FileNotFoundException f){
+			System.out.println("User data not found, not loading file...");
 		}catch(IOException e){
 			e.printStackTrace();
 		}catch(ClassNotFoundException c){

@@ -14,10 +14,10 @@ public class PasswordServer{
 			registry.rebind("Interface", stub);
 			System.out.println("Server is ready at port 8000");
 			
-			//i.getManager().loadData();
+			i.getManager().loadData();
 			
 		} catch(Exception e){
 			e.printStackTrace();
-		}
+		} 
 	}
 }

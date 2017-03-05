@@ -16,5 +16,9 @@ public class User implements Serializable{
 		this.key = key;
 		userData = new ArrayList<PasswordEntry>();
 	}
+	
+	public Key getKey(){
+		return key;
+	}
 
 }
