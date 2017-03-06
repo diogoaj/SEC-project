@@ -14,9 +14,7 @@ public class PasswordManager {
 	private List<User> users;
 	
 	public PasswordManager(){
-		if(users == null){
-			users = new ArrayList<User>();
-		}
+		users = new ArrayList<User>();
 	}
 	
 	public void addUser(User user){
@@ -28,6 +26,10 @@ public class PasswordManager {
 		}
 		users.add(user);
 		saveData();
+	}
+	
+	public ArrayList<User> getUsers(){
+		return (ArrayList<User>) users;
 	}
 	
 	@SuppressWarnings("unchecked")
