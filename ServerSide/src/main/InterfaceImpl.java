@@ -1,8 +1,11 @@
+package main;
+
 import java.rmi.RemoteException;
 import java.security.Key;
 
-import business.PasswordManager;
-import business.User;
+import main.business.PasswordManager;
+import main.business.User;
+
 
 public class InterfaceImpl implements InterfaceRMI{
 	

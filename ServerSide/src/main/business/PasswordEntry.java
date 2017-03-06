@@ -1,4 +1,4 @@
-package business;
+package main.business;
 
 import java.io.Serializable;
 
