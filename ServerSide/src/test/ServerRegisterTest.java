@@ -21,7 +21,7 @@ public class ServerRegisterTest {
 	private static KeyPairGenerator keyGen;
 
     @BeforeClass
-    public static void oneTimeSetUp() throws NoSuchAlgorithmException {
+    public static void oneTimeSetUp() throws Exception {
     	keyGen = KeyPairGenerator.getInstance("RSA");
 		interfacermi = new InterfaceImpl(new PasswordManager());
 		pm = interfacermi.getManager();
