@@ -42,8 +42,19 @@ public class InterfaceImpl implements InterfaceRMI{
 	}
 
 	public byte[] get(Key publicKey, byte[] domain, byte[] username) throws RemoteException {
-		// TODO Auto-generated method stub
-		return null;
+		User user = null;
+		for (User u: manager.getUsers()){
+			if(publicKey.equals(u.getKey())){
+				user = u;
+				break;
+			}
+		}
+		if(user != null){
+			return user.getPassword(domain, username);
+		}else{
+			System.out.println("User does not exist!");
+			return null;
+		}
 	}
 
 }

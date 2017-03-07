@@ -37,5 +37,15 @@ public class User implements Serializable{
 			userData.add(p);
 		}
 	}
+	
+	public byte[] getPassword(byte[] domain, byte[] username){
+		for (PasswordEntry p : userData){
+			if(p.getDomain().equals(domain) &&
+			   p.getUsername().equals(username)){
+				return p.getPassword();
+			}
+		}
+		return null;
+	}
 
 }
