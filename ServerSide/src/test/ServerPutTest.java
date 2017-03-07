@@ -19,10 +19,11 @@ import main.business.User;
 public class ServerPutTest {
 	private static InterfaceImpl interfacermi;
 	private static PasswordManager pm;
+	private static KeyPairGenerator keyGen;
 
     @BeforeClass
     public static void oneTimeSetUp() throws Exception {
-    	KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+    	keyGen = KeyPairGenerator.getInstance("RSA");
 		interfacermi = new InterfaceImpl(new PasswordManager());
 		pm = interfacermi.getManager();
 		
@@ -85,6 +86,20 @@ public class ServerPutTest {
     	interfacermi.put(user1.getKey(), domain.getBytes(), username.getBytes(), password.getBytes());
     	
     	assertTrue(user1.getData().size() == 1);
+    }
+    
+    @Test
+    public void putTestUserNotExists() throws Exception{
+    	User user1 = new User(keyGen.genKeyPair().getPublic());
+    	String domain = "facebook";
+    	String username = "user1";
+    	String password = "123123";
+    	
+    	interfacermi.put(user1.getKey(), domain.getBytes(), username.getBytes(), password.getBytes());
+    	
+    	assertTrue(pm.getUsers().size() == 2);
+    	assertTrue(user1.getData().size() == 0);
+    	
     }
     
     
