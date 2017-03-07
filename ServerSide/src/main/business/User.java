@@ -20,5 +20,22 @@ public class User implements Serializable{
 	public Key getKey(){
 		return key;
 	}
+	
+	public void addPasswordEntry(PasswordEntry p){
+		int found = 0;
+		for (int i = 0; i < userData.size(); i++) {
+			if(userData.get(i).getDomain().equals(p.getDomain()) &&
+			   userData.get(i).getUsername().equals(p.getUsername())){
+				userData.get(i).setPassword(p.getPassword());
+				System.out.println("Password Updated");
+				found = 1;
+				break;
+			}
+		}
+		
+		if (found == 0){
+			userData.add(p);
+		}
+	}
 
 }

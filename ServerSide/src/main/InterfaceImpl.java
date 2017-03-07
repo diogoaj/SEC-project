@@ -3,6 +3,7 @@ package main;
 import java.rmi.RemoteException;
 import java.security.Key;
 
+import main.business.PasswordEntry;
 import main.business.PasswordManager;
 import main.business.User;
 
@@ -20,12 +21,23 @@ public class InterfaceImpl implements InterfaceRMI{
 	}
 	
 	public void register(Key publicKey) throws RemoteException {
-		User u = new User(publicKey);
-		manager.addUser(u);
+		User user = new User(publicKey);
+		manager.addUser(user);
 	}
 
 	public void put(Key publicKey, byte[] domain, byte[] username, byte[] password) throws RemoteException {
-		// TODO Auto-generated method stub
+		User user = null;
+		for (User u: manager.getUsers()){
+			if(publicKey.equals(u.getKey())){
+				user = u;
+				break;
+			}
+		}
+		if(user != null){
+			user.addPasswordEntry(new PasswordEntry(domain, username, password));
+		}else{
+			System.out.println("User does not exist!");
+		}
 		
 	}
 
