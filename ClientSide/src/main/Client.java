@@ -39,14 +39,22 @@ public class Client {
             	switch(n){
             		case 1:
             			library.register_user();
+            			System.out.println("User registered\n");
             			break;
             		
             		case 2:
             			save();
+            			System.out.println("Password saved\n");
             			break;
             		
             		case 3:
-            			System.out.println(new String(retrieve(), "UTF-8"));
+            			byte[] retrieved = retrieve();
+            			if(retrieved == null){
+            				System.out.println("Password not found!\n");
+            			}
+            			else{
+            				System.out.println("Your password is: " + new String(retrieved, "UTF-8") + "\n");
+            			}
             			break;
             			
             		case 4:
