@@ -5,7 +5,8 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.security.KeyStore;
 import java.security.PrivateKey;
-import java.security.PublicKey;;
+import java.security.PublicKey;
+import java.security.Signature;;
 
 public class API {
 
@@ -30,7 +31,7 @@ public class API {
 	
 	public void register_user(){
 		try{
-			stub.register(getPublicKey());
+			stub.register(getPublicKey(), signData("Integrity".getBytes()));
 		}
 		catch(Exception e){
 			System.err.println("Register user exception: " + e.toString());
@@ -80,6 +81,21 @@ public class API {
 		}
 		catch(Exception e){
 			System.err.println("Private key exception: " + e.toString());
+        	e.printStackTrace();
+		}
+		return null;
+	}
+	
+	private byte[] signData(byte[] data){
+		try{
+			// generating a signature
+			Signature dsaForSign = Signature.getInstance("SHA1withDSA");
+			dsaForSign.initSign(getPrivateKey());
+			dsaForSign.update(data);
+			return dsaForSign.sign();
+		}
+		catch(Exception e){
+			System.err.println("Signature exception: " + e.toString());
         	e.printStackTrace();
 		}
 		return null;
