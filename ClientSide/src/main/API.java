@@ -43,7 +43,7 @@ public class API {
 			stub.put(getPublicKey(), domain, username, password);
 		}
 		catch(Exception e){
-			System.err.println("Register user exception: " + e.toString());
+			System.err.println("Save password exception: " + e.toString());
         	e.printStackTrace();
 		}
 	}
@@ -53,7 +53,7 @@ public class API {
 			return stub.get(getPublicKey(), domain, username);
 		}
 		catch(Exception e){
-			System.err.println("Register user exception: " + e.toString());
+			System.err.println("Retrieve password exception: " + e.toString());
         	e.printStackTrace();
 		}
 		return null;
@@ -68,7 +68,7 @@ public class API {
 			return keyStore.getCertificate("clientkeystore").getPublicKey();
 		}
 		catch(Exception e){
-			System.err.println("Register user exception: " + e.toString());
+			System.err.println("Public Key exception: " + e.toString());
         	e.printStackTrace();
 		}
 		return null;
@@ -79,7 +79,7 @@ public class API {
 			return (PrivateKey)keyStore.getKey("clientkeystore", password.toCharArray());
 		}
 		catch(Exception e){
-			System.err.println("Register user exception: " + e.toString());
+			System.err.println("Private key exception: " + e.toString());
         	e.printStackTrace();
 		}
 		return null;
