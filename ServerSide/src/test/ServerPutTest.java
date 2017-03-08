@@ -54,6 +54,7 @@ public class ServerPutTest {
     	assertTrue(Arrays.equals(user1.getData().get(0).getDomain(), domain.getBytes()));
     	assertTrue(Arrays.equals(user1.getData().get(0).getUsername(), username.getBytes()));
     	assertTrue(Arrays.equals(user1.getData().get(0).getPassword(), password.getBytes()));
+    	assertTrue(new String(user1.getData().get(0).getPassword()).equals(password));
     }
     
     @Test

@@ -53,7 +53,7 @@ public class Client {
             				System.out.println("Password not found!\n");
             			}
             			else{
-            				System.out.println("Your password is: " + new String(retrieved, "UTF-8") + "\n");
+            				System.out.println("Your password is: " + new String(retrieved) + "\n");
             			}
             			break;
             			
@@ -82,7 +82,7 @@ public class Client {
 		System.out.println("What username?");
 		String username = console.readLine();
 		System.out.println("What password?");
-		String password = console.readPassword().toString();
+		String password = String.valueOf(console.readPassword());
 		library.save_password(domain.getBytes(), username.getBytes(), password.getBytes());
 	}
 	
