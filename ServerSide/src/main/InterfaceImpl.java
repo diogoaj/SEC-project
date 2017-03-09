@@ -2,8 +2,12 @@ package main;
 
 import java.rmi.RemoteException;
 import java.security.Key;
+import java.security.KeyStore;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
+
+import javax.crypto.Cipher;
 
 import main.business.PasswordEntry;
 import main.business.PasswordManager;
@@ -63,7 +67,7 @@ public class InterfaceImpl implements InterfaceRMI{
 	
 	private boolean verifySignature(PublicKey publicKey, byte[] data, byte[] signature){
 		try{
-			Signature dsaForVerify = Signature.getInstance("SHA1withDSA");
+			Signature dsaForVerify = Signature.getInstance("SHA1withRSA");
 			dsaForVerify.initVerify(publicKey);
 			dsaForVerify.update(data);
 			return dsaForVerify.verify(signature);

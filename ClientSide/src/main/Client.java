@@ -5,8 +5,6 @@ import java.security.KeyStore;
 
 public class Client {
 
-	//FIXME
-	//CONFIRM I CAN HAVE STATIC API
 	private static API library = new API();
 	private static Console console = System.console();
 	
@@ -65,11 +63,7 @@ public class Client {
             			System.out.println("Unknown Command");
             			break;
             	}
-        	}
-        	
-        	//ks.getCertificate("clientkeystore").getPublicKey()
-        	//(PrivateKey)ks.getKey("clientkeystore", "banana".toCharArray())
-        	
+        	}        	
         } catch (Exception e) {
         	System.err.println("Client exception: " + e.toString());
         	e.printStackTrace();

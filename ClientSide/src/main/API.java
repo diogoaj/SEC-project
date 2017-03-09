@@ -6,7 +6,11 @@ import java.rmi.registry.Registry;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.Signature;;
+import java.security.Signature;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+
+import javax.crypto.Cipher;;
 
 public class API {
 
@@ -39,6 +43,7 @@ public class API {
 		}
 	}
 	
+	//FIXME MISSING INTEGRITY
 	public void save_password(byte[] domain, byte[] username, byte[] password){
 		try{
 			stub.put(getPublicKey(), domain, username, password);
@@ -89,7 +94,7 @@ public class API {
 	private byte[] signData(byte[] data){
 		try{
 			// generating a signature
-			Signature dsaForSign = Signature.getInstance("SHA1withDSA");
+			Signature dsaForSign = Signature.getInstance("SHA1withRSA");
 			dsaForSign.initSign(getPrivateKey());
 			dsaForSign.update(data);
 			return dsaForSign.sign();
@@ -99,6 +104,5 @@ public class API {
         	e.printStackTrace();
 		}
 		return null;
-	}
-	
+	}	
 }
