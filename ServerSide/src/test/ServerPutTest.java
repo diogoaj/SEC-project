@@ -2,10 +2,8 @@ package test;
 
 import static org.junit.Assert.assertTrue;
 
-import java.rmi.RemoteException;
 import java.security.Key;
 import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 import org.junit.After;
@@ -31,8 +29,8 @@ public class ServerPutTest {
     	Key k = keyGen.genKeyPair().getPublic();
     	Key k2 = keyGen.generateKeyPair().getPublic();
 
-		interfacermi.register(k);
-		interfacermi.register(k2);
+		interfacermi.register(k, null);
+		interfacermi.register(k2, null);
     }
     
     @After

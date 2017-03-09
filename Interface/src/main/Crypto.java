@@ -2,10 +2,10 @@ package main;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.Base64;
 
 import javax.crypto.Cipher;
 
-//FIXME PROBABLY TO BE DELETED
 public class Crypto {
 	
 	public static byte[] encrypt(PublicKey key, byte[] plaintext){
@@ -32,6 +32,14 @@ public class Crypto {
         	e.printStackTrace();
 		}
 		return null;
+	}
+	
+	public static byte[] decodeBase64(byte[] src){
+		return Base64.getDecoder().decode(src);
+	}
+	
+	public static byte[] encodeBase64(byte[] src){
+		return Base64.getEncoder().encode(src);
 	}
 	
 }

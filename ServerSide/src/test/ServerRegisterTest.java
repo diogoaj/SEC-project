@@ -4,7 +4,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.security.Key;
 import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
 
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -36,7 +35,7 @@ public class ServerRegisterTest {
     public void registerTestSuccess() throws Exception{
     	keyGen.initialize(512);
     	Key k = keyGen.genKeyPair().getPublic();
-    	interfacermi.register(k);
+    	interfacermi.register(k, null);
     	
     	assertTrue(pm.getUsers().size() == 1);
     }
@@ -45,8 +44,8 @@ public class ServerRegisterTest {
     public void registerTestSameUser() throws Exception{
     	keyGen.initialize(512);
     	Key k = keyGen.genKeyPair().getPublic();
-    	interfacermi.register(k);	
-    	interfacermi.register(k);
+    	interfacermi.register(k, null);	
+    	interfacermi.register(k, null);
     	assertTrue(pm.getUsers().size() == 1);
     }
 

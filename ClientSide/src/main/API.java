@@ -10,13 +10,12 @@ import java.security.Signature;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
-import javax.crypto.Cipher;;
-
 public class API {
 
 	private KeyStore keyStore;
 	private String password;
 	private InterfaceRMI stub;
+	private PublicKey serverKey;
 	
 	public void init(KeyStore key, String id, String pass){
 		keyStore = key;
@@ -26,6 +25,10 @@ public class API {
 			keyStore.load(new FileInputStream("./keystore_" + id +".jks"), password.toCharArray());
 			Registry registry = LocateRegistry.getRegistry(8000);
 	    	stub = (InterfaceRMI) registry.lookup("Interface");
+	    	
+	    	CertificateFactory f = CertificateFactory.getInstance("X.509");
+	    	X509Certificate certificate = (X509Certificate)f.generateCertificate(new FileInputStream("server.cer"));
+	    	serverKey = certificate.getPublicKey();
 		}
 		catch (Exception e) {
         	System.err.println("Client exception: " + e.toString());
@@ -46,7 +49,11 @@ public class API {
 	//FIXME MISSING INTEGRITY
 	public void save_password(byte[] domain, byte[] username, byte[] password){
 		try{
-			stub.put(getPublicKey(), domain, username, password);
+			byte[] d = Crypto.encodeBase64(Crypto.encrypt(serverKey, domain));
+			byte[] u = Crypto.encodeBase64(Crypto.encrypt(serverKey, username));
+			byte[] p = Crypto.encodeBase64(Crypto.encrypt(getPublicKey(), password));
+		
+			stub.put(getPublicKey(), d, u, p);
 		}
 		catch(Exception e){
 			System.err.println("Save password exception: " + e.toString());
@@ -56,7 +63,9 @@ public class API {
 	
 	public byte[] retrieve_password(byte[] domain, byte[] username){
 		try{
-			return stub.get(getPublicKey(), domain, username);
+			byte[] d = Crypto.encodeBase64(Crypto.encrypt(serverKey, domain));
+			byte[] u = Crypto.encodeBase64(Crypto.encrypt(serverKey, username));
+			return Crypto.decrypt(getPrivateKey(), Crypto.decodeBase64(stub.get(getPublicKey(), d, u)));
 		}
 		catch(Exception e){
 			System.err.println("Retrieve password exception: " + e.toString());

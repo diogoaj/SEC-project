@@ -28,8 +28,8 @@ public class ServerGetTest {
     	Key k = keyGen.genKeyPair().getPublic();
     	Key k2 = keyGen.generateKeyPair().getPublic();
 
-		interfacermi.register(k);
-		interfacermi.register(k2);
+		interfacermi.register(k, null);
+		interfacermi.register(k2, null);
     }
     
     @After

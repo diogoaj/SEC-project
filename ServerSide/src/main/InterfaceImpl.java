@@ -1,13 +1,12 @@
 package main;
 
+import java.io.FileInputStream;
 import java.rmi.RemoteException;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
-
-import javax.crypto.Cipher;
 
 import main.business.PasswordEntry;
 import main.business.PasswordManager;
@@ -17,9 +16,15 @@ import main.business.User;
 public class InterfaceImpl implements InterfaceRMI{
 	
 	private PasswordManager manager;
+	private PublicKey publicKey;
+	private PrivateKey privateKey;
 	
-	public InterfaceImpl(PasswordManager manager){
+	public InterfaceImpl(PasswordManager manager) throws Exception{
 		this.manager = manager;
+		KeyStore ks = KeyStore.getInstance("JKS");
+		ks.load(new FileInputStream("./server_keystore.jks"), "serverpass".toCharArray());
+		publicKey = ks.getCertificate("serverkeystore").getPublicKey();
+		privateKey = (PrivateKey)ks.getKey("serverkeystore", "serverpass".toCharArray());
 	}
 	
 	public PasswordManager getManager(){
@@ -34,6 +39,7 @@ public class InterfaceImpl implements InterfaceRMI{
 	}
 
 	public void put(Key publicKey, byte[] domain, byte[] username, byte[] password) throws RemoteException {
+		
 		User user = null;
 		for (User u: manager.getUsers()){
 			if(publicKey.equals(u.getKey())){
@@ -42,7 +48,9 @@ public class InterfaceImpl implements InterfaceRMI{
 			}
 		}
 		if(user != null){
-			user.addPasswordEntry(new PasswordEntry(domain, username, password));
+			byte[] d = Crypto.decrypt(privateKey, Crypto.decodeBase64(domain));
+			byte[] u = Crypto.decrypt(privateKey, Crypto.decodeBase64(username));
+			user.addPasswordEntry(new PasswordEntry(d, u, password));
 		}else{
 			System.out.println("User does not exist!");
 		}
@@ -58,7 +66,9 @@ public class InterfaceImpl implements InterfaceRMI{
 			}
 		}
 		if(user != null){
-			return user.getPassword(domain, username);
+			byte[] d = Crypto.decrypt(privateKey, Crypto.decodeBase64(domain));
+			byte[] u = Crypto.decrypt(privateKey, Crypto.decodeBase64(username));
+			return user.getPassword(d, u);
 		}else{
 			System.out.println("User does not exist!");
 			return null;
