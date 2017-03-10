@@ -35,7 +35,7 @@ public class ServerRegisterTest {
     public void registerTestSuccess() throws Exception{
     	keyGen.initialize(512);
     	Key k = keyGen.genKeyPair().getPublic();
-    	interfacermi.register(k, null);
+    	interfacermi.register(k, null, null);
     	
     	assertTrue(pm.getUsers().size() == 1);
     }
@@ -44,8 +44,8 @@ public class ServerRegisterTest {
     public void registerTestSameUser() throws Exception{
     	keyGen.initialize(512);
     	Key k = keyGen.genKeyPair().getPublic();
-    	interfacermi.register(k, null);	
-    	interfacermi.register(k, null);
+    	interfacermi.register(k, null, null);	
+    	interfacermi.register(k, null, null);
     	assertTrue(pm.getUsers().size() == 1);
     }
 

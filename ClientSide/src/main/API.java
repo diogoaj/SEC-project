@@ -43,7 +43,9 @@ public class API {
 	
 	public void register_user(){
 		try{
-			stub.register(publicKey, signData("Integrity".getBytes()));
+			byte[] t = Crypto.encodeBase64(Crypto.encrypt(serverKey, Crypto.getTime()));
+			
+			stub.register(publicKey, t, signData(Crypto.concatenateBytes("Integrity".getBytes(), t)));
 		}
 		catch(Exception e){
 			System.err.println("Register user exception: " + e.toString());
@@ -57,8 +59,9 @@ public class API {
 			byte[] d = Crypto.encodeBase64(Crypto.encrypt(serverKey, domain));
 			byte[] u = Crypto.encodeBase64(Crypto.encrypt(serverKey, username));
 			byte[] p = Crypto.encodeBase64(Crypto.encrypt(publicKey, password));
+			byte[] t = Crypto.encodeBase64(Crypto.encrypt(serverKey, Crypto.getTime()));
 		
-			stub.put(publicKey, d, u, p, signData(Crypto.concatenateBytes(d,u,p)));
+			stub.put(publicKey, d, u, p, t, signData(Crypto.concatenateBytes(d,u,p,t)));
 		}
 		catch(Exception e){
 			System.err.println("Save password exception: " + e.toString());
@@ -70,7 +73,8 @@ public class API {
 		try{
 			byte[] d = Crypto.encodeBase64(Crypto.encrypt(serverKey, domain));
 			byte[] u = Crypto.encodeBase64(Crypto.encrypt(serverKey, username));
-			byte[] password = stub.get(publicKey, d, u, signData(Crypto.concatenateBytes(d,u)));
+			byte[] t = Crypto.encodeBase64(Crypto.encrypt(serverKey, Crypto.getTime()));
+			byte[] password = stub.get(publicKey, d, u, t, signData(Crypto.concatenateBytes(d,u,t)));
 			if(password != null){
 				return Crypto.decrypt(privateKey, Crypto.decodeBase64(password));
 			}

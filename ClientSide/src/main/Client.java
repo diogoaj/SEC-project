@@ -23,7 +23,7 @@ public class Client {
         	
         	int n;
         	
-        	while(true){
+        	while(true){        		
             	System.out.println("Choose your command:");
             	System.out.println("\n1- Register \n2- Save Password \n3- Get Password\n4- Exit");
             	

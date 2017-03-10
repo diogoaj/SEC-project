@@ -28,8 +28,8 @@ public class ServerGetTest {
     	Key k = keyGen.genKeyPair().getPublic();
     	Key k2 = keyGen.generateKeyPair().getPublic();
 
-		interfacermi.register(k, null);
-		interfacermi.register(k2, null);
+		interfacermi.register(k, null, null);
+		interfacermi.register(k2, null, null);
     }
     
     @After
@@ -45,9 +45,9 @@ public class ServerGetTest {
     	String username = "user1";
     	String password = "123123";
     	
-    	interfacermi.put(user1.getKey(), domain.getBytes(), username.getBytes(), password.getBytes(), null);
+    	interfacermi.put(user1.getKey(), domain.getBytes(), username.getBytes(), password.getBytes(), null, null);
     	
-    	byte[] pwd = interfacermi.get(user1.getKey(), domain.getBytes(), username.getBytes(), null);
+    	byte[] pwd = interfacermi.get(user1.getKey(), domain.getBytes(), username.getBytes(), null, null);
     	
     	assertTrue(Arrays.equals(password.getBytes(), pwd));
     	assertTrue(new String(pwd).equals(password));

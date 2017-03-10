@@ -10,6 +10,8 @@ import javax.crypto.Cipher;
 
 public class Crypto {
 	
+	private static long MILLISECONDS = 2000;
+	
 	public static byte[] encrypt(PublicKey key, byte[] plaintext){
 		try{
 		    Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");   
@@ -55,6 +57,22 @@ public class Crypto {
 		}
 
 		return outputStream.toByteArray();
+	}
+	
+	public static byte[] getTime(){
+		long curTime = System.currentTimeMillis();
+		String time = String.valueOf(curTime);
+		return time.getBytes();
+	}
+	
+	public static long decodeTime(byte[] time){
+		String curTime = new String(time);
+		return Long.valueOf(curTime);
+	}
+	
+	public static boolean withinTime(long receivedTime){
+		long time = System.currentTimeMillis();
+		return (time >= receivedTime && time <= receivedTime + MILLISECONDS);
 	}
 	
 }

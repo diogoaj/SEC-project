@@ -31,14 +31,21 @@ public class InterfaceImpl implements InterfaceRMI{
 		return manager;
 	}
 	
-	public void register(Key publicKey, byte[] signedData) throws RemoteException {
-		if(verifySignature((PublicKey) publicKey, "Integrity".getBytes(), signedData)){
-			User user = new User(publicKey);
-			manager.addUser(user);
+	public void register(Key publicKey, byte[] timestamp, byte[] signedData) throws RemoteException {
+		if(verifySignature((PublicKey) publicKey, Crypto.concatenateBytes("Integrity".getBytes(), timestamp), signedData)){
+			byte[] t = Crypto.decrypt(serverPrivateKey, Crypto.decodeBase64(timestamp));
+			long receivedTime = Crypto.decodeTime(t);
+			if(Crypto.withinTime(receivedTime)){
+				User user = new User(publicKey);
+				manager.addUser(user);
+			}
+			else{
+				System.out.println("Replay attack incoming");
+			}
 		}
 	}
 
-	public void put(Key publicKey, byte[] domain, byte[] username, byte[] password, byte[] signedData) throws RemoteException {
+	public void put(Key publicKey, byte[] domain, byte[] username, byte[] password, byte[] timestamp, byte[] signedData) throws RemoteException {
 		
 		User user = null;
 		for (User u: manager.getUsers()){
@@ -48,10 +55,17 @@ public class InterfaceImpl implements InterfaceRMI{
 			}
 		}
 		if(user != null){
-			if(verifySignature((PublicKey) publicKey, Crypto.concatenateBytes(domain,username,password), signedData)){
+			if(verifySignature((PublicKey) publicKey, Crypto.concatenateBytes(domain,username,password,timestamp), signedData)){
+				byte[] t = Crypto.decrypt(serverPrivateKey, Crypto.decodeBase64(timestamp));
+				long receivedTime = Crypto.decodeTime(t);
 				byte[] d = Crypto.decrypt(serverPrivateKey, Crypto.decodeBase64(domain));
 				byte[] u = Crypto.decrypt(serverPrivateKey, Crypto.decodeBase64(username));
-				user.addPasswordEntry(new PasswordEntry(d, u, password));
+				if(Crypto.withinTime(receivedTime)){
+					user.addPasswordEntry(new PasswordEntry(d, u, password));
+				}
+				else{
+					System.out.println("Replay attack incoming");
+				}
 			}
 		}else{
 			System.out.println("User does not exist!");
@@ -59,7 +73,7 @@ public class InterfaceImpl implements InterfaceRMI{
 		
 	}
 
-	public byte[] get(Key publicKey, byte[] domain, byte[] username, byte[] signedData) throws RemoteException {
+	public byte[] get(Key publicKey, byte[] domain, byte[] username, byte[] timestamp, byte[] signedData) throws RemoteException {
 		User user = null;
 		for (User u: manager.getUsers()){
 			if(publicKey.equals(u.getKey())){
@@ -68,10 +82,18 @@ public class InterfaceImpl implements InterfaceRMI{
 			}
 		}
 		if(user != null){
-			if(verifySignature((PublicKey) publicKey, Crypto.concatenateBytes(domain,username), signedData)){
+			if(verifySignature((PublicKey) publicKey, Crypto.concatenateBytes(domain,username, timestamp), signedData)){
+				byte[] t = Crypto.decrypt(serverPrivateKey, Crypto.decodeBase64(timestamp));
+				long receivedTime = Crypto.decodeTime(t);
 				byte[] d = Crypto.decrypt(serverPrivateKey, Crypto.decodeBase64(domain));
 				byte[] u = Crypto.decrypt(serverPrivateKey, Crypto.decodeBase64(username));
-				return user.getPassword(d, u);
+				if(Crypto.withinTime(receivedTime)){
+					return user.getPassword(d, u);
+				}
+				else{
+					System.out.println("Replay attack incoming");
+					return null;
+				}
 			}
 			else{
 				return null;
