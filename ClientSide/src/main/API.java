@@ -16,6 +16,8 @@ public class API {
 	private String password;
 	private InterfaceRMI stub;
 	private PublicKey serverKey;
+	private PublicKey publicKey;
+	private PrivateKey privateKey;
 	
 	public void init(KeyStore key, String id, String pass){
 		keyStore = key;
@@ -29,6 +31,9 @@ public class API {
 	    	CertificateFactory f = CertificateFactory.getInstance("X.509");
 	    	X509Certificate certificate = (X509Certificate)f.generateCertificate(new FileInputStream("server.cer"));
 	    	serverKey = certificate.getPublicKey();
+	    	
+	    	privateKey = (PrivateKey)keyStore.getKey("clientkeystore", password.toCharArray());
+	    	publicKey = keyStore.getCertificate("clientkeystore").getPublicKey();
 		}
 		catch (Exception e) {
         	System.err.println("Client exception: " + e.toString());
@@ -38,7 +43,7 @@ public class API {
 	
 	public void register_user(){
 		try{
-			stub.register(getPublicKey(), signData("Integrity".getBytes()));
+			stub.register(publicKey, signData("Integrity".getBytes()));
 		}
 		catch(Exception e){
 			System.err.println("Register user exception: " + e.toString());
@@ -51,9 +56,9 @@ public class API {
 		try{
 			byte[] d = Crypto.encodeBase64(Crypto.encrypt(serverKey, domain));
 			byte[] u = Crypto.encodeBase64(Crypto.encrypt(serverKey, username));
-			byte[] p = Crypto.encodeBase64(Crypto.encrypt(getPublicKey(), password));
+			byte[] p = Crypto.encodeBase64(Crypto.encrypt(publicKey, password));
 		
-			stub.put(getPublicKey(), d, u, p);
+			stub.put(publicKey, d, u, p, signData(Crypto.concatenateBytes(d,u,p)));
 		}
 		catch(Exception e){
 			System.err.println("Save password exception: " + e.toString());
@@ -65,7 +70,13 @@ public class API {
 		try{
 			byte[] d = Crypto.encodeBase64(Crypto.encrypt(serverKey, domain));
 			byte[] u = Crypto.encodeBase64(Crypto.encrypt(serverKey, username));
-			return Crypto.decrypt(getPrivateKey(), Crypto.decodeBase64(stub.get(getPublicKey(), d, u)));
+			byte[] password = stub.get(publicKey, d, u, signData(Crypto.concatenateBytes(d,u)));
+			if(password != null){
+				return Crypto.decrypt(privateKey, Crypto.decodeBase64(password));
+			}
+			else{
+				return null;
+			}
 		}
 		catch(Exception e){
 			System.err.println("Retrieve password exception: " + e.toString());
@@ -78,33 +89,11 @@ public class API {
 		System.exit(0);
 	}
 	
-	private PublicKey getPublicKey(){
-		try{
-			return keyStore.getCertificate("clientkeystore").getPublicKey();
-		}
-		catch(Exception e){
-			System.err.println("Public Key exception: " + e.toString());
-        	e.printStackTrace();
-		}
-		return null;
-	}
-	
-	private PrivateKey getPrivateKey(){
-		try{
-			return (PrivateKey)keyStore.getKey("clientkeystore", password.toCharArray());
-		}
-		catch(Exception e){
-			System.err.println("Private key exception: " + e.toString());
-        	e.printStackTrace();
-		}
-		return null;
-	}
-	
 	private byte[] signData(byte[] data){
 		try{
 			// generating a signature
 			Signature dsaForSign = Signature.getInstance("SHA1withRSA");
-			dsaForSign.initSign(getPrivateKey());
+			dsaForSign.initSign(privateKey);
 			dsaForSign.update(data);
 			return dsaForSign.sign();
 		}

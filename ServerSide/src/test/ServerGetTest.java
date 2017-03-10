@@ -45,9 +45,9 @@ public class ServerGetTest {
     	String username = "user1";
     	String password = "123123";
     	
-    	interfacermi.put(user1.getKey(), domain.getBytes(), username.getBytes(), password.getBytes());
+    	interfacermi.put(user1.getKey(), domain.getBytes(), username.getBytes(), password.getBytes(), null);
     	
-    	byte[] pwd = interfacermi.get(user1.getKey(), domain.getBytes(), username.getBytes());
+    	byte[] pwd = interfacermi.get(user1.getKey(), domain.getBytes(), username.getBytes(), null);
     	
     	assertTrue(Arrays.equals(password.getBytes(), pwd));
     	assertTrue(new String(pwd).equals(password));

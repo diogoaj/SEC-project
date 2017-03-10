@@ -1,5 +1,7 @@
 package main;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Base64;
@@ -40,6 +42,19 @@ public class Crypto {
 	
 	public static byte[] encodeBase64(byte[] src){
 		return Base64.getEncoder().encode(src);
+	}
+	
+	public static byte[] concatenateBytes(byte[] ... data){
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+		for(int i = 0; i < data.length; i++){
+			try {
+				outputStream.write(data[i]);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+		return outputStream.toByteArray();
 	}
 	
 }

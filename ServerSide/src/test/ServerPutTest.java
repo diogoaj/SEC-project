@@ -46,7 +46,7 @@ public class ServerPutTest {
     	String username = "user1";
     	String password = "123123";
     	
-    	interfacermi.put(user1.getKey(), domain.getBytes(), username.getBytes(), password.getBytes());
+    	interfacermi.put(user1.getKey(), domain.getBytes(), username.getBytes(), password.getBytes(), null);
     	
     	assertTrue(user1.getData().size() == 1);
     	assertTrue(Arrays.equals(user1.getData().get(0).getDomain(), domain.getBytes()));
@@ -64,9 +64,9 @@ public class ServerPutTest {
     	String username2 = "user2";
     	String password = "123123";
     	
-    	interfacermi.put(user1.getKey(), domain.getBytes(), username.getBytes(), password.getBytes());
-    	interfacermi.put(user2.getKey(), domain.getBytes(), username.getBytes(), password.getBytes());
-    	interfacermi.put(user2.getKey(), domain.getBytes(), username2.getBytes(), password.getBytes());
+    	interfacermi.put(user1.getKey(), domain.getBytes(), username.getBytes(), password.getBytes(), null);
+    	interfacermi.put(user2.getKey(), domain.getBytes(), username.getBytes(), password.getBytes(), null);
+    	interfacermi.put(user2.getKey(), domain.getBytes(), username2.getBytes(), password.getBytes(), null);
     	
     	assertTrue(user1.getData().size() == 1);
     	assertTrue(user2.getData().size() == 2);
@@ -79,10 +79,10 @@ public class ServerPutTest {
     	String username = "user1";
     	String password = "123123";
     	
-    	interfacermi.put(user1.getKey(), domain.getBytes(), username.getBytes(), password.getBytes());
+    	interfacermi.put(user1.getKey(), domain.getBytes(), username.getBytes(), password.getBytes(), null);
     	
     	password = "strongerpassword";
-    	interfacermi.put(user1.getKey(), domain.getBytes(), username.getBytes(), password.getBytes());
+    	interfacermi.put(user1.getKey(), domain.getBytes(), username.getBytes(), password.getBytes(), null);
     	
     	assertTrue(user1.getData().size() == 1);
     }
@@ -94,7 +94,7 @@ public class ServerPutTest {
     	String username = "user1";
     	String password = "123123";
     	
-    	interfacermi.put(user1.getKey(), domain.getBytes(), username.getBytes(), password.getBytes());
+    	interfacermi.put(user1.getKey(), domain.getBytes(), username.getBytes(), password.getBytes(), null);
     	
     	assertTrue(pm.getUsers().size() == 2);
     	assertTrue(user1.getData().size() == 0);

@@ -16,15 +16,15 @@ import main.business.User;
 public class InterfaceImpl implements InterfaceRMI{
 	
 	private PasswordManager manager;
-	private PublicKey publicKey;
-	private PrivateKey privateKey;
+	private PublicKey serverPublicKey;
+	private PrivateKey serverPrivateKey;
 	
 	public InterfaceImpl(PasswordManager manager) throws Exception{
 		this.manager = manager;
 		KeyStore ks = KeyStore.getInstance("JKS");
 		ks.load(new FileInputStream("./server_keystore.jks"), "serverpass".toCharArray());
-		publicKey = ks.getCertificate("serverkeystore").getPublicKey();
-		privateKey = (PrivateKey)ks.getKey("serverkeystore", "serverpass".toCharArray());
+		serverPublicKey = ks.getCertificate("serverkeystore").getPublicKey();
+		serverPrivateKey = (PrivateKey)ks.getKey("serverkeystore", "serverpass".toCharArray());
 	}
 	
 	public PasswordManager getManager(){
@@ -38,7 +38,7 @@ public class InterfaceImpl implements InterfaceRMI{
 		}
 	}
 
-	public void put(Key publicKey, byte[] domain, byte[] username, byte[] password) throws RemoteException {
+	public void put(Key publicKey, byte[] domain, byte[] username, byte[] password, byte[] signedData) throws RemoteException {
 		
 		User user = null;
 		for (User u: manager.getUsers()){
@@ -48,16 +48,18 @@ public class InterfaceImpl implements InterfaceRMI{
 			}
 		}
 		if(user != null){
-			byte[] d = Crypto.decrypt(privateKey, Crypto.decodeBase64(domain));
-			byte[] u = Crypto.decrypt(privateKey, Crypto.decodeBase64(username));
-			user.addPasswordEntry(new PasswordEntry(d, u, password));
+			if(verifySignature((PublicKey) publicKey, Crypto.concatenateBytes(domain,username,password), signedData)){
+				byte[] d = Crypto.decrypt(serverPrivateKey, Crypto.decodeBase64(domain));
+				byte[] u = Crypto.decrypt(serverPrivateKey, Crypto.decodeBase64(username));
+				user.addPasswordEntry(new PasswordEntry(d, u, password));
+			}
 		}else{
 			System.out.println("User does not exist!");
 		}
 		
 	}
 
-	public byte[] get(Key publicKey, byte[] domain, byte[] username) throws RemoteException {
+	public byte[] get(Key publicKey, byte[] domain, byte[] username, byte[] signedData) throws RemoteException {
 		User user = null;
 		for (User u: manager.getUsers()){
 			if(publicKey.equals(u.getKey())){
@@ -66,9 +68,14 @@ public class InterfaceImpl implements InterfaceRMI{
 			}
 		}
 		if(user != null){
-			byte[] d = Crypto.decrypt(privateKey, Crypto.decodeBase64(domain));
-			byte[] u = Crypto.decrypt(privateKey, Crypto.decodeBase64(username));
-			return user.getPassword(d, u);
+			if(verifySignature((PublicKey) publicKey, Crypto.concatenateBytes(domain,username), signedData)){
+				byte[] d = Crypto.decrypt(serverPrivateKey, Crypto.decodeBase64(domain));
+				byte[] u = Crypto.decrypt(serverPrivateKey, Crypto.decodeBase64(username));
+				return user.getPassword(d, u);
+			}
+			else{
+				return null;
+			}
 		}else{
 			System.out.println("User does not exist!");
 			return null;
