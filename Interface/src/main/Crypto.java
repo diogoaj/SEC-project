@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.Signature;
 import java.util.Base64;
 
 import javax.crypto.Cipher;
@@ -36,6 +37,35 @@ public class Crypto {
         	e.printStackTrace();
 		}
 		return null;
+	}
+	
+	public static byte[] signData(PrivateKey k, byte[] data){
+		try{
+			// generating a signature
+			Signature dsaForSign = Signature.getInstance("SHA1withRSA");
+			dsaForSign.initSign(k);
+			dsaForSign.update(data);
+			return dsaForSign.sign();
+		}
+		catch(Exception e){
+			System.err.println("Signature exception: " + e.toString());
+        	e.printStackTrace();
+		}
+		return null;
+	}	
+	
+	public static boolean verifySignature(PublicKey publicKey, byte[] data, byte[] signature){
+		try{
+			Signature dsaForVerify = Signature.getInstance("SHA1withRSA");
+			dsaForVerify.initVerify(publicKey);
+			dsaForVerify.update(data);
+			return dsaForVerify.verify(signature);
+		}
+		catch(Exception e){
+			System.err.println("Retrieve password exception: " + e.toString());
+        	e.printStackTrace();
+		}
+		return false;
 	}
 	
 	public static byte[] decodeBase64(byte[] src){

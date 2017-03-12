@@ -45,7 +45,9 @@ public class API {
 		try{
 			byte[] t = Crypto.encodeBase64(Crypto.encrypt(serverKey, Crypto.getTime()));
 			
-			stub.register(publicKey, t, signData(Crypto.concatenateBytes("Integrity".getBytes(), t)));
+			stub.register(publicKey, 
+					      t, 
+					      Crypto.signData(privateKey, Crypto.concatenateBytes("Integrity".getBytes(), t)));
 		}
 		catch(Exception e){
 			System.err.println("Register user exception: " + e.toString());
@@ -53,7 +55,6 @@ public class API {
 		}
 	}
 	
-	//FIXME MISSING INTEGRITY
 	public void save_password(byte[] domain, byte[] username, byte[] password){
 		try{
 			byte[] d = Crypto.encodeBase64(Crypto.encrypt(serverKey, domain));
@@ -61,7 +62,12 @@ public class API {
 			byte[] p = Crypto.encodeBase64(Crypto.encrypt(publicKey, password));
 			byte[] t = Crypto.encodeBase64(Crypto.encrypt(serverKey, Crypto.getTime()));
 		
-			stub.put(publicKey, d, u, p, t, signData(Crypto.concatenateBytes(d,u,p,t)));
+			stub.put(publicKey, 
+					 d, 
+					 u, 
+					 p, 
+					 t, 
+					 Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,p,t)));
 		}
 		catch(Exception e){
 			System.err.println("Save password exception: " + e.toString());
@@ -74,7 +80,11 @@ public class API {
 			byte[] d = Crypto.encodeBase64(Crypto.encrypt(serverKey, domain));
 			byte[] u = Crypto.encodeBase64(Crypto.encrypt(serverKey, username));
 			byte[] t = Crypto.encodeBase64(Crypto.encrypt(serverKey, Crypto.getTime()));
-			byte[] password = stub.get(publicKey, d, u, t, signData(Crypto.concatenateBytes(d,u,t)));
+			byte[] password = stub.get(publicKey, 
+					                   d, 
+					                   u, 
+					                   t, 
+					                   Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,t)));
 			if(password != null){
 				return Crypto.decrypt(privateKey, Crypto.decodeBase64(password));
 			}
@@ -92,19 +102,4 @@ public class API {
 	public void close(){
 		System.exit(0);
 	}
-	
-	private byte[] signData(byte[] data){
-		try{
-			// generating a signature
-			Signature dsaForSign = Signature.getInstance("SHA1withRSA");
-			dsaForSign.initSign(privateKey);
-			dsaForSign.update(data);
-			return dsaForSign.sign();
-		}
-		catch(Exception e){
-			System.err.println("Signature exception: " + e.toString());
-        	e.printStackTrace();
-		}
-		return null;
-	}	
 }
