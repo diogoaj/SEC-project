@@ -2,7 +2,7 @@ package test;
 
 import static org.junit.Assert.assertTrue;
 
-import java.security.Key;
+import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -25,6 +25,7 @@ public class ServerRegisterTest {
     @BeforeClass
     public static void oneTimeSetUp() throws Exception {
     	keyGen = KeyPairGenerator.getInstance("RSA");
+    	keyGen.initialize(2048);
 		interfacermi = new InterfaceImpl(new PasswordManager());
 		pm = interfacermi.getManager();
     }
@@ -36,25 +37,55 @@ public class ServerRegisterTest {
     
     @Test
     public void registerTestSuccess() throws Exception{
-    	keyGen.initialize(512);
-    	PublicKey publickey = keyGen.genKeyPair().getPublic();
-    	PrivateKey privatekey = keyGen.genKeyPair().getPrivate();
+    	KeyPair kp = keyGen.generateKeyPair();
+    	PublicKey publickey = kp.getPublic();
+    	PrivateKey privatekey = kp.getPrivate();
     	
     	byte[] t = Crypto.encodeBase64(Crypto.encrypt(pm.getServerPublicKey(), Crypto.getTime()));
-    	byte[] signed = Crypto.signData(privatekey, Crypto.concatenateBytes("Integrity".getBytes(), t));
-    	interfacermi.register(publickey, t, signed);
+		
+		interfacermi.register(publickey, 
+				      		  t, 
+				              Crypto.signData(privatekey, Crypto.concatenateBytes("Integrity".getBytes(), t)));
     	
     	assertTrue(pm.getUsers().size() == 1);
     }
     
-    /*
+
     @Test
     public void registerTestSameUser() throws Exception{
-    	keyGen.initialize(512);
-    	Key k = keyGen.genKeyPair().getPublic();
-    	interfacermi.register(k, null, null);	
-    	interfacermi.register(k, null, null);
+     	KeyPair kp = keyGen.generateKeyPair();
+    	PublicKey publickey = kp.getPublic();
+    	PrivateKey privatekey = kp.getPrivate();
+
+    	byte[] t = Crypto.encodeBase64(Crypto.encrypt(pm.getServerPublicKey(), Crypto.getTime()));
+		
+		interfacermi.register(publickey, 
+				      		  t, 
+				              Crypto.signData(privatekey, Crypto.concatenateBytes("Integrity".getBytes(), t)));
+		
+		t = Crypto.encodeBase64(Crypto.encrypt(pm.getServerPublicKey(), Crypto.getTime()));
+		interfacermi.register(publickey, 
+	      		  t, 
+	              Crypto.signData(privatekey, Crypto.concatenateBytes("Integrity".getBytes(), t)));
+    
     	assertTrue(pm.getUsers().size() == 1);
-    }*/
+    }
+    
+    @Test 
+    public void registerOtherUserFail() throws Exception{
+    	KeyPair kp1 = keyGen.generateKeyPair();
+    	PrivateKey privatekey1 = kp1.getPrivate();
+    	
+    	KeyPair kp2 = keyGen.generateKeyPair();
+    	PublicKey publickey2 = kp2.getPublic();
+    	
+    	byte[] t = Crypto.encodeBase64(Crypto.encrypt(pm.getServerPublicKey(), Crypto.getTime()));
+		
+		interfacermi.register(publickey2, 
+				      		  t, 
+				              Crypto.signData(privatekey1, Crypto.concatenateBytes("Integrity".getBytes(), t)));
+		
+		assertTrue(pm.getUsers().size() == 0);
+    }
 
 }

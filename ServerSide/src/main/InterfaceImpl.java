@@ -3,7 +3,6 @@ package main;
 import java.rmi.RemoteException;
 import java.security.Key;
 import java.security.PublicKey;
-import main.business.PasswordEntry;
 import main.business.PasswordManager;
 import main.business.User;
 
@@ -31,6 +30,8 @@ public class InterfaceImpl implements InterfaceRMI{
 			else{
 				System.out.println("Replay attack detected!");
 			}
+		}else{
+			System.out.println("Invalid Signature!");
 		}
 	}
 

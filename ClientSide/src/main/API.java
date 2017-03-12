@@ -24,12 +24,12 @@ public class API {
 		password = pass;
 				
 		try{
-			keyStore.load(new FileInputStream("./keystore_" + id +".jks"), password.toCharArray());
+			keyStore.load(new FileInputStream("bin/main/keystore_" + id +".jks"), password.toCharArray());
 			Registry registry = LocateRegistry.getRegistry(8000);
 	    	stub = (InterfaceRMI) registry.lookup("Interface");
 	    	
 	    	CertificateFactory f = CertificateFactory.getInstance("X.509");
-	    	X509Certificate certificate = (X509Certificate)f.generateCertificate(new FileInputStream("server.cer"));
+	    	X509Certificate certificate = (X509Certificate)f.generateCertificate(new FileInputStream("bin/main/server.cer"));
 	    	serverKey = certificate.getPublicKey();
 	    	
 	    	privateKey = (PrivateKey)keyStore.getKey("clientkeystore", password.toCharArray());
