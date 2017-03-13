@@ -6,7 +6,6 @@ import java.rmi.registry.Registry;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.Signature;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
@@ -48,8 +47,8 @@ public class API {
 				byte[] t = Crypto.decrypt(privateKey, Crypto.decodeBase64(bytes[0]));
 				byte[] token = Crypto.encodeBase64(Crypto.encrypt(serverKey, Crypto.nextToken(t)));
 				stub.register(publicKey,
-						token,
-					      Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
+						      token,
+					          Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
 			}
 			else{
 				System.out.println("Signature not correct!");

@@ -16,7 +16,7 @@ import main.InterfaceImpl;
 import main.business.PasswordManager;
 
 
-public class ServerRegisterTest {
+public class ServerGetChallengeTest {
 	
 	private static InterfaceImpl interfacermi;
 	private static PasswordManager pm;
@@ -36,33 +36,12 @@ public class ServerRegisterTest {
     }
     
     @Test
-    public void registerTestSuccess() throws Exception{
+    public void getChallengeTestSuccess() throws Exception{
     	KeyPair kp = keyGen.generateKeyPair();
-    	PublicKey publickey = kp.getPublic();
-    	PrivateKey privatekey = kp.getPrivate();
-    	
-    	assertTrue(pm.getUsers().size() == 1);
-    }
-    
+    	PublicKey publicKey = kp.getPublic();
 
-    @Test
-    public void registerTestSameUser() throws Exception{
-     	KeyPair kp = keyGen.generateKeyPair();
-    	PublicKey publickey = kp.getPublic();
-    	PrivateKey privatekey = kp.getPrivate();
-    
-    	assertTrue(pm.getUsers().size() == 1);
-    }
-    
-    @Test 
-    public void registerOtherUserFail() throws Exception{
-    	KeyPair kp1 = keyGen.generateKeyPair();
-    	PrivateKey privatekey1 = kp1.getPrivate();
+    	byte[][] token = interfacermi.getChallenge(publicKey);
     	
-    	KeyPair kp2 = keyGen.generateKeyPair();
-    	PublicKey publickey2 = kp2.getPublic();
-		
-		assertTrue(pm.getUsers().size() == 0);
+    	assertTrue(Crypto.verifySignature(pm.getServerPublicKey(), token[0], token[1]));
     }
-
 }

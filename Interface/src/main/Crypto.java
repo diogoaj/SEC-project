@@ -76,7 +76,7 @@ public class Crypto {
 		return Base64.getEncoder().encode(src);
 	}
 	
-	public static byte[] concatenateBytes(byte[] ... data){
+	public static byte[] concatenateBytes(byte[]... data){
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
 		for(int i = 0; i < data.length; i++){
 			try {
