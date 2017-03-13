@@ -43,11 +43,14 @@ public class API {
 	
 	public void register_user(){
 		try{
-			byte[] t = Crypto.encodeBase64(Crypto.encrypt(serverKey, Crypto.getTime()));
-			
-			stub.register(publicKey, 
-					      t, 
-					      Crypto.signData(privateKey, Crypto.concatenateBytes("Integrity".getBytes(), t)));
+			byte[][] bytes = stub.getChallenge(publicKey);
+			if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
+				byte[] t = Crypto.decrypt(privateKey, Crypto.decodeBase64(bytes[0]));
+				byte[] token = Crypto.encodeBase64(Crypto.encrypt(serverKey, Crypto.nextToken(t)));
+				stub.register(publicKey,
+						token,
+					      Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
+			}
 		}
 		catch(Exception e){
 			System.err.println("Register user exception: " + e.toString());
@@ -60,14 +63,12 @@ public class API {
 			byte[] d = Crypto.encodeBase64(Crypto.encrypt(serverKey, domain));
 			byte[] u = Crypto.encodeBase64(Crypto.encrypt(serverKey, username));
 			byte[] p = Crypto.encodeBase64(Crypto.encrypt(publicKey, password));
-			byte[] t = Crypto.encodeBase64(Crypto.encrypt(serverKey, Crypto.getTime()));
 		
 			stub.put(publicKey, 
 					 d, 
 					 u, 
 					 p, 
-					 t, 
-					 Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,p,t)));
+					 Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,p)));
 		}
 		catch(Exception e){
 			System.err.println("Save password exception: " + e.toString());
@@ -79,12 +80,10 @@ public class API {
 		try{
 			byte[] d = Crypto.encodeBase64(Crypto.encrypt(serverKey, domain));
 			byte[] u = Crypto.encodeBase64(Crypto.encrypt(serverKey, username));
-			byte[] t = Crypto.encodeBase64(Crypto.encrypt(serverKey, Crypto.getTime()));
 			byte[] password = stub.get(publicKey, 
 					                   d, 
 					                   u, 
-					                   t, 
-					                   Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,t)));
+					                   Crypto.signData(privateKey, Crypto.concatenateBytes(d,u)));
 			if(password != null){
 				return Crypto.decrypt(privateKey, Crypto.decodeBase64(password));
 			}

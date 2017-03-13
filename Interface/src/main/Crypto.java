@@ -105,4 +105,25 @@ public class Crypto {
 		return (time >= receivedTime && time <= receivedTime + MILLISECONDS);
 	}
 	
+	public static byte[][] getByteList(byte[] ... data){
+		int count = data.length;
+		byte[][] bytes = new byte[2][];
+		for(int i = 0; i< count; i++){
+			bytes[i] = data[i];
+		}
+		return bytes;
+	}
+	
+	public static byte[] nextToken(byte[] data){
+		String tokenString = new String(data);
+		long tokenToSend = Long.valueOf(tokenString) + 1;
+		tokenString = String.valueOf(tokenToSend);
+		return tokenString.getBytes();
+	}
+	
+	public static long getLong(byte[] data){
+		String tokenString = new String(data);
+		return Long.valueOf(tokenString);
+	}
+	
 }
