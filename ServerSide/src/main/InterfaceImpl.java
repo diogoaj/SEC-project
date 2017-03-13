@@ -47,7 +47,7 @@ public class InterfaceImpl implements InterfaceRMI{
 		}
 	}
 
-	public void put(Key publicKey, byte[] domain, byte[] username, byte[] password, byte[] signedData) throws RemoteException {
+	public void put(Key publicKey, byte[] domain, byte[] username, byte[] password, byte[] token, byte[] signedData) throws RemoteException {
 		
 		User user = null;
 		for (User u: manager.getUsers()){
@@ -57,10 +57,20 @@ public class InterfaceImpl implements InterfaceRMI{
 			}
 		}
 		if(user != null){
-			if(Crypto.verifySignature((PublicKey) publicKey, Crypto.concatenateBytes(domain,username,password), signedData)){
-				byte[] d = Crypto.decrypt(manager.getServerPrivateKey(), Crypto.decodeBase64(domain));
-				byte[] u = Crypto.decrypt(manager.getServerPrivateKey(), Crypto.decodeBase64(username));
-				manager.addPasswordEntry(user,d,u,password);
+			if(Crypto.verifySignature((PublicKey) publicKey, Crypto.concatenateBytes(domain,username,password,token), signedData)){
+				byte[] t = Crypto.decrypt(manager.getServerPrivateKey(), Crypto.decodeBase64(token));
+				long tokenToVerify = Crypto.getLong(t);
+				if(tokenToVerify == tokenMap.get(publicKey)){
+					byte[] d = Crypto.decrypt(manager.getServerPrivateKey(), Crypto.decodeBase64(domain));
+					byte[] u = Crypto.decrypt(manager.getServerPrivateKey(), Crypto.decodeBase64(username));
+					manager.addPasswordEntry(user,d,u,password);
+				}
+				else{
+					System.out.println("Token incorrect!");
+				}
+			}
+			else{
+				System.out.println("Signature not correct!");
 			}
 		}else{
 			System.out.println("User does not exist!");
@@ -68,7 +78,7 @@ public class InterfaceImpl implements InterfaceRMI{
 		
 	}
 
-	public byte[] get(Key publicKey, byte[] domain, byte[] username, byte[] signedData) throws RemoteException {
+	public byte[] get(Key publicKey, byte[] domain, byte[] username, byte[] token, byte[] signedData) throws RemoteException {
 		User user = null;
 		for (User u: manager.getUsers()){
 			if(publicKey.equals(u.getKey())){
@@ -77,10 +87,18 @@ public class InterfaceImpl implements InterfaceRMI{
 			}
 		}
 		if(user != null){
-			if(Crypto.verifySignature((PublicKey) publicKey, Crypto.concatenateBytes(domain,username), signedData)){
-				byte[] d = Crypto.decrypt(manager.getServerPrivateKey(), Crypto.decodeBase64(domain));
-				byte[] u = Crypto.decrypt(manager.getServerPrivateKey(), Crypto.decodeBase64(username));
-				return user.getPassword(d, u);
+			if(Crypto.verifySignature((PublicKey) publicKey, Crypto.concatenateBytes(domain,username,token), signedData)){
+				byte[] t = Crypto.decrypt(manager.getServerPrivateKey(), Crypto.decodeBase64(token));
+				long tokenToVerify = Crypto.getLong(t);
+				if(tokenToVerify == tokenMap.get(publicKey)){
+					byte[] d = Crypto.decrypt(manager.getServerPrivateKey(), Crypto.decodeBase64(domain));
+					byte[] u = Crypto.decrypt(manager.getServerPrivateKey(), Crypto.decodeBase64(username));
+					return user.getPassword(d, u);
+				}
+				else{
+					System.out.println("Incorrect token");
+					return null;
+				}
 			}
 			else{
 				return null;

@@ -51,6 +51,9 @@ public class API {
 						token,
 					      Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
 			}
+			else{
+				System.out.println("Signature not correct!");
+			}
 		}
 		catch(Exception e){
 			System.err.println("Register user exception: " + e.toString());
@@ -60,15 +63,24 @@ public class API {
 	
 	public void save_password(byte[] domain, byte[] username, byte[] password){
 		try{
-			byte[] d = Crypto.encodeBase64(Crypto.encrypt(serverKey, domain));
-			byte[] u = Crypto.encodeBase64(Crypto.encrypt(serverKey, username));
-			byte[] p = Crypto.encodeBase64(Crypto.encrypt(publicKey, password));
-		
-			stub.put(publicKey, 
-					 d, 
-					 u, 
-					 p, 
-					 Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,p)));
+			byte[][] bytes = stub.getChallenge(publicKey);
+			if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
+				byte[] d = Crypto.encodeBase64(Crypto.encrypt(serverKey, domain));
+				byte[] u = Crypto.encodeBase64(Crypto.encrypt(serverKey, username));
+				byte[] p = Crypto.encodeBase64(Crypto.encrypt(publicKey, password));
+				byte[] t = Crypto.decrypt(privateKey, Crypto.decodeBase64(bytes[0]));
+				byte[] token = Crypto.encodeBase64(Crypto.encrypt(serverKey, Crypto.nextToken(t)));
+				
+				stub.put(publicKey, 
+						 d, 
+						 u, 
+						 p, 
+						 token,
+						 Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,p,token)));
+			}
+			else{
+				System.out.println("Signature not correct!");
+			}
 		}
 		catch(Exception e){
 			System.err.println("Save password exception: " + e.toString());
@@ -78,17 +90,27 @@ public class API {
 	
 	public byte[] retrieve_password(byte[] domain, byte[] username){
 		try{
-			byte[] d = Crypto.encodeBase64(Crypto.encrypt(serverKey, domain));
-			byte[] u = Crypto.encodeBase64(Crypto.encrypt(serverKey, username));
-			byte[] password = stub.get(publicKey, 
-					                   d, 
-					                   u, 
-					                   Crypto.signData(privateKey, Crypto.concatenateBytes(d,u)));
-			if(password != null){
-				return Crypto.decrypt(privateKey, Crypto.decodeBase64(password));
+			byte[][] bytes = stub.getChallenge(publicKey);
+			if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
+			
+				byte[] d = Crypto.encodeBase64(Crypto.encrypt(serverKey, domain));
+				byte[] u = Crypto.encodeBase64(Crypto.encrypt(serverKey, username));
+				byte[] t = Crypto.decrypt(privateKey, Crypto.decodeBase64(bytes[0]));
+				byte[] token = Crypto.encodeBase64(Crypto.encrypt(serverKey, Crypto.nextToken(t)));
+				byte[] password = stub.get(publicKey, 
+						                   d, 
+						                   u, 
+						                   token,
+						                   Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,token)));
+				if(password != null){
+					return Crypto.decrypt(privateKey, Crypto.decodeBase64(password));
+				}
+				else{
+					return null;
+				}
 			}
 			else{
-				return null;
+				System.out.println("Signature incorrect!");
 			}
 		}
 		catch(Exception e){
