@@ -1,14 +1,20 @@
 # SEC-project
 Repository for the SEC project course
 
+## To compile the project:
+```
+1. Compile in the main folder SEC-project/
+2. mvn install compile
+```
+
 ### To run Server:
 ```
 cd ServerSide/
-java -cp "bin/;{path_to_interface}/bin" main.PasswordServer
+mvn exec:java -Dexec.mainClass="main.java.PasswordServer"
 ```
 
 ### To run Client:
 ```
 cd ClientSide/
-java -cp "bin/;{path_to_interface}/bin" main.Client {keystore_id} {keystore_password}
+mvn exec:java -Dexec.mainClass="main.java.Client" -Dexec.args="{keystore_id} {keystore_password}"
 ```
