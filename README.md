@@ -3,8 +3,8 @@ Repository for the SEC project course
 
 ## To compile the project:
 ```
-1. Compile in the main folder SEC-project/
-2. mvn install compile
+Compile in the main folder SEC-project/
+mvn install compile
 ```
 
 ### To run Server:
