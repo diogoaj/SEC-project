@@ -1,4 +1,4 @@
-package main;
+package main.java;
 
 import java.io.FileInputStream;
 import java.rmi.registry.LocateRegistry;

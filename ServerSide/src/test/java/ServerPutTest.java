@@ -1,18 +1,21 @@
-package test;
+package test.java;
 
 import static org.junit.Assert.assertTrue;
 
 import java.security.Key;
 import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.Arrays;
 
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import main.InterfaceImpl;
-import main.business.PasswordManager;
-import main.business.User;
+import main.java.Crypto;
+import main.java.InterfaceImpl;
+import main.java.business.PasswordManager;
+import main.java.business.User;
 
 public class ServerPutTest {
 	private static InterfaceImpl interfacermi;
@@ -25,12 +28,25 @@ public class ServerPutTest {
 		interfacermi = new InterfaceImpl(new PasswordManager());
 		pm = interfacermi.getManager();
 		
-		keyGen.initialize(512);
-    	Key k = keyGen.genKeyPair().getPublic();
-    	Key k2 = keyGen.generateKeyPair().getPublic();
-
-		interfacermi.register(k, null, null);
-		interfacermi.register(k2, null, null);
+		// Generate two keypairs
+		keyGen.initialize(2048);
+    	PublicKey public1 = keyGen.genKeyPair().getPublic();
+    	PrivateKey private1 = keyGen.genKeyPair().getPrivate();
+    	
+    	PublicKey public2 = keyGen.genKeyPair().getPublic();
+    	PrivateKey private2 = keyGen.genKeyPair().getPrivate();
+    	
+    	// Register user1
+    	byte[][] received = interfacermi.getChallenge(public1);
+    	byte[] t = Crypto.decrypt(private1, Crypto.decodeBase64(received[0]));
+		byte[] token = Crypto.encodeBase64(Crypto.encrypt(pm.getServerPublicKey(), Crypto.nextToken(t)));
+    	interfacermi.register(public1, token, Crypto.signData(private1, Crypto.concatenateBytes(public1.getEncoded(), token)));
+    	
+    	// Register user2
+    	received = interfacermi.getChallenge(public2);
+    	t = Crypto.decrypt(private2, Crypto.decodeBase64(received[0]));
+		token = Crypto.encodeBase64(Crypto.encrypt(pm.getServerPublicKey(), Crypto.nextToken(t)));
+    	interfacermi.register(public2, token, Crypto.signData(private2, Crypto.concatenateBytes(public2.getEncoded(), token)));
     }
     
     @After
@@ -39,12 +55,15 @@ public class ServerPutTest {
     	pm.getUsers().get(1).getData().clear();
     }
     
+    /*
     @Test
-    public void putTestSuccess() throws Exception{
+    public void putSuccess() throws Exception{
     	User user1 = pm.getUsers().get(0);
     	String domain = "facebook";
     	String username = "user1";
     	String password = "123123";
+    	
+    	byte[][] received = interfacermi.getChallenge(user1.getKey());
     	
     	interfacermi.put(user1.getKey(), domain.getBytes(), username.getBytes(), password.getBytes(), null, null);
     	
@@ -99,7 +118,7 @@ public class ServerPutTest {
     	assertTrue(pm.getUsers().size() == 2);
     	assertTrue(user1.getData().size() == 0);
     	
-    }
+    }*/
     
     
 

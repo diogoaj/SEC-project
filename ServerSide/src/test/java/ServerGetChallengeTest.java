@@ -1,4 +1,4 @@
-package test;
+package test.java;
 
 import static org.junit.Assert.assertTrue;
 
@@ -11,9 +11,9 @@ import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import main.Crypto;
-import main.InterfaceImpl;
-import main.business.PasswordManager;
+import main.java.Crypto;
+import main.java.InterfaceImpl;
+import main.java.business.PasswordManager;
 
 
 public class ServerGetChallengeTest {

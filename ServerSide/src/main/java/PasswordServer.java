@@ -1,10 +1,10 @@
-package main;
+package main.java;
 
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-import main.business.PasswordManager;
+import main.java.business.PasswordManager;
 
 public class PasswordServer{
 	
@@ -17,6 +17,7 @@ public class PasswordServer{
 			System.out.println("Server is ready at port 8000");
 			
 			i.getManager().loadData();
+			while(true);
 			
 		} catch(Exception e){
 			e.printStackTrace();

@@ -1,4 +1,4 @@
-package main;
+package main.java;
 
 import java.rmi.RemoteException;
 import java.security.SecureRandom;
@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.security.Key;
 import java.security.PublicKey;
-import main.business.PasswordManager;
-import main.business.User;
+import main.java.business.PasswordManager;
+import main.java.business.User;
 
 
 public class InterfaceImpl implements InterfaceRMI{

@@ -1,4 +1,4 @@
-package test;
+package test.java;
 
 import static org.junit.Assert.assertTrue;
 
@@ -11,9 +11,9 @@ import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import main.Crypto;
-import main.InterfaceImpl;
-import main.business.PasswordManager;
+import main.java.Crypto;
+import main.java.InterfaceImpl;
+import main.java.business.PasswordManager;
 
 
 public class ServerRegisterTest {
@@ -42,8 +42,11 @@ public class ServerRegisterTest {
     	PrivateKey privateKey = kp.getPrivate();
 
     	byte[][] received = interfacermi.getChallenge(publicKey);
-    	byte[] t = Crypto.decrypt(privateKey, Crypto.decodeBase64(received[0]));
     	
+    	boolean verified = Crypto.verifySignature(pm.getServerPublicKey(), received[0], received[1]);
+    	assertTrue(verified);
+    	
+    	byte[] t = Crypto.decrypt(privateKey, Crypto.decodeBase64(received[0]));
 		byte[] token = Crypto.encodeBase64(Crypto.encrypt(pm.getServerPublicKey(), Crypto.nextToken(t)));
 		
     	interfacermi.register(publicKey, token, Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
@@ -60,8 +63,11 @@ public class ServerRegisterTest {
     
     	for (int i = 0; i < 2; i++){
 	    	byte[][] received = interfacermi.getChallenge(publicKey);
-	    	byte[] t = Crypto.decrypt(privateKey, Crypto.decodeBase64(received[0]));
+	
+	    	boolean verified = Crypto.verifySignature(pm.getServerPublicKey(), received[0], received[1]);
+	    	assertTrue(verified);
 	    	
+	    	byte[] t = Crypto.decrypt(privateKey, Crypto.decodeBase64(received[0]));
 			byte[] token = Crypto.encodeBase64(Crypto.encrypt(pm.getServerPublicKey(), Crypto.nextToken(t)));
 			
 	    	interfacermi.register(publicKey, token, Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
@@ -97,6 +103,10 @@ public class ServerRegisterTest {
     	PrivateKey privateKeyAttacker = kp.getPrivate();
     	
     	byte[][] received = interfacermi.getChallenge(publicKeyAttacker);
+    	
+    	boolean verified = Crypto.verifySignature(pm.getServerPublicKey(), received[0], received[1]);
+    	assertTrue(verified);
+    	
     	byte[] t = Crypto.decrypt(privateKeyAttacker, Crypto.decodeBase64(received[0]));
 		byte[] token = Crypto.encodeBase64(Crypto.encrypt(pm.getServerPublicKey(), Crypto.nextToken(t)));
     	
