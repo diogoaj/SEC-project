@@ -36,33 +36,73 @@ public class ServerRegisterTest {
     }
     
     @Test
-    public void registerTestSuccess() throws Exception{
+    public void registerSuccess() throws Exception{
     	KeyPair kp = keyGen.generateKeyPair();
-    	PublicKey publickey = kp.getPublic();
-    	PrivateKey privatekey = kp.getPrivate();
+    	PublicKey publicKey = kp.getPublic();
+    	PrivateKey privateKey = kp.getPrivate();
+
+    	byte[][] received = interfacermi.getChallenge(publicKey);
+    	byte[] t = Crypto.decrypt(privateKey, Crypto.decodeBase64(received[0]));
+    	
+		byte[] token = Crypto.encodeBase64(Crypto.encrypt(pm.getServerPublicKey(), Crypto.nextToken(t)));
+		
+    	interfacermi.register(publicKey, token, Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
     	
     	assertTrue(pm.getUsers().size() == 1);
     }
     
 
     @Test
-    public void registerTestSameUser() throws Exception{
+    public void registerSameUser() throws Exception{
      	KeyPair kp = keyGen.generateKeyPair();
-    	PublicKey publickey = kp.getPublic();
-    	PrivateKey privatekey = kp.getPrivate();
+    	PublicKey publicKey = kp.getPublic();
+    	PrivateKey privateKey = kp.getPrivate();
     
+    	for (int i = 0; i < 2; i++){
+	    	byte[][] received = interfacermi.getChallenge(publicKey);
+	    	byte[] t = Crypto.decrypt(privateKey, Crypto.decodeBase64(received[0]));
+	    	
+			byte[] token = Crypto.encodeBase64(Crypto.encrypt(pm.getServerPublicKey(), Crypto.nextToken(t)));
+			
+	    	interfacermi.register(publicKey, token, Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
+    	}
+    	
     	assertTrue(pm.getUsers().size() == 1);
     }
     
+    /*
+    @Test 
+    public void registerUserRepeatedMessage() throws Exception{
+    	KeyPair kp = keyGen.generateKeyPair();
+    	PublicKey publicKey = kp.getPublic();
+    	PrivateKey privateKey = kp.getPrivate();
+
+    	byte[][] received = interfacermi.getChallenge(publicKey);
+    	byte[] t = Crypto.decrypt(privateKey, Crypto.decodeBase64(received[0]));
+		byte[] token = Crypto.encodeBase64(Crypto.encrypt(pm.getServerPublicKey(), Crypto.nextToken(t)));
+    	
+    	interfacermi.register(publicKey, token, Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
+    	
+    	// Replay attack should not be possible
+    	interfacermi.register(publicKey, token, Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
+    }*/
+    
     @Test 
     public void registerOtherUserFail() throws Exception{
-    	KeyPair kp1 = keyGen.generateKeyPair();
-    	PrivateKey privatekey1 = kp1.getPrivate();
+    	KeyPair kp = keyGen.generateKeyPair();
+    	PublicKey publicKey = kp.getPublic();
     	
-    	KeyPair kp2 = keyGen.generateKeyPair();
-    	PublicKey publickey2 = kp2.getPublic();
-		
-		assertTrue(pm.getUsers().size() == 0);
+    	kp = keyGen.generateKeyPair();
+    	PublicKey publicKeyAttacker = kp.getPublic();
+    	PrivateKey privateKeyAttacker = kp.getPrivate();
+    	
+    	byte[][] received = interfacermi.getChallenge(publicKeyAttacker);
+    	byte[] t = Crypto.decrypt(privateKeyAttacker, Crypto.decodeBase64(received[0]));
+		byte[] token = Crypto.encodeBase64(Crypto.encrypt(pm.getServerPublicKey(), Crypto.nextToken(t)));
+    	
+    	interfacermi.register(publicKey, token, Crypto.signData(privateKeyAttacker, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
+    	
+    	assertTrue(pm.getUsers().size() == 0);
     }
 
 }

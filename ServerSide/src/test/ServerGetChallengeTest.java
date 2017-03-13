@@ -36,7 +36,7 @@ public class ServerGetChallengeTest {
     }
     
     @Test
-    public void getChallengeTestSuccess() throws Exception{
+    public void getChallengeSuccess() throws Exception{
     	KeyPair kp = keyGen.generateKeyPair();
     	PublicKey publicKey = kp.getPublic();
 
