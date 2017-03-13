@@ -76,8 +76,8 @@ public class ServerRegisterTest {
     	assertTrue(pm.getUsers().size() == 1);
     }
     
-    /*
-    @Test 
+   
+    @Test
     public void registerUserRepeatedMessage() throws Exception{
     	KeyPair kp = keyGen.generateKeyPair();
     	PublicKey publicKey = kp.getPublic();
@@ -88,10 +88,9 @@ public class ServerRegisterTest {
 		byte[] token = Crypto.encodeBase64(Crypto.encrypt(pm.getServerPublicKey(), Crypto.nextToken(t)));
     	
     	interfacermi.register(publicKey, token, Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
-    	
     	// Replay attack should not be possible
     	interfacermi.register(publicKey, token, Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
-    }*/
+    }
     
     @Test 
     public void registerOtherUserFail() throws Exception{

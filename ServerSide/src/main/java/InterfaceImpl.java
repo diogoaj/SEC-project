@@ -36,6 +36,7 @@ public class InterfaceImpl implements InterfaceRMI{
 			byte[] t = Crypto.decrypt(manager.getServerPrivateKey(), Crypto.decodeBase64(token));
 			long tokenToVerify = Crypto.getLong(t);
 			if(tokenToVerify == tokenMap.get(publicKey)){
+				tokenMap.put(publicKey, (long) 0);
 				User user = new User(publicKey);
 				manager.addUser(user);
 			}else{
