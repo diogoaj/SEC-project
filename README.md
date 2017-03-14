@@ -29,5 +29,5 @@ java -cp "target/classes/;../Interface/target/classes" main.java.PasswordServer
 ### To run Client:
 ```
 cd ClientSide/
-$ java -cp "target/classes/;../Interface/target/classes" main.java.Client {keystore_id} {keystore_pass}
+java -cp "target/classes/;../Interface/target/classes" main.java.Client {keystore_id} {keystore_pass}
 ```
