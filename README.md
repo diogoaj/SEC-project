@@ -31,3 +31,9 @@ java -cp "target/classes/;../Interface/target/classes" main.java.PasswordServer
 cd ClientSide/
 java -cp "target/classes/;../Interface/target/classes" main.java.Client {keystore_id} {keystore_pass}
 ```
+
+## To run tests [With Maven]:
+```
+In main folder:
+mvn test
+```
