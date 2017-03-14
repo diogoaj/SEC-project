@@ -18,12 +18,11 @@ public class PasswordManager {
 	private List<User> users;
 	private PublicKey serverPublicKey;
 	private PrivateKey serverPrivateKey;
-	
 	public PasswordManager(){
 		users = new ArrayList<User>();
 		try{
 			KeyStore ks = KeyStore.getInstance("JKS");
-			ks.load(new FileInputStream("bin/main/server_keystore.jks"), "serverpass".toCharArray());
+			ks.load(new FileInputStream("src/main/resources/server_keystore.jks"), "serverpass".toCharArray());
 			serverPublicKey = ks.getCertificate("serverkeystore").getPublicKey();
 			serverPrivateKey = (PrivateKey)ks.getKey("serverkeystore", "serverpass".toCharArray());
 		}catch(Exception e){
@@ -62,7 +61,7 @@ public class PasswordManager {
 	@SuppressWarnings("unchecked")
 	public void loadData(){
 		try{
-			FileInputStream fileIn = new FileInputStream("userData.ser");
+			FileInputStream fileIn = new FileInputStream("src/main/resources/userData.ser");
 			ObjectInputStream in = new ObjectInputStream(fileIn);
 			users = (ArrayList<User>)in.readObject();
 			in.close();
@@ -78,7 +77,7 @@ public class PasswordManager {
 	
 	public void saveData(){
 		try{
-			FileOutputStream fileOut = new FileOutputStream("userData.ser");
+			FileOutputStream fileOut = new FileOutputStream("src/main/resources/userData.ser");
 			ObjectOutputStream out = new ObjectOutputStream(fileOut);
 			out.writeObject(users);
 			out.close();

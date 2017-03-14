@@ -17,7 +17,7 @@ public class PasswordServer{
 			System.out.println("Server is ready at port 8000");
 			
 			i.getManager().loadData();
-			while(true);
+			//while(true);
 			
 		} catch(Exception e){
 			e.printStackTrace();
