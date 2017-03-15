@@ -52,7 +52,9 @@ public class Client {
             				System.out.println("Password not found!\n");
             			}
             			else{
-            				System.out.println("Your password is: " + new String(retrieved) + "\n");
+            				String received = new String(retrieved);
+            				String[] pwd = received.split("\\|\\|");
+            				System.out.println("Your password is: " + pwd[0] + "\n");
             			}
             			break;
             			

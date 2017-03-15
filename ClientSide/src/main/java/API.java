@@ -1,6 +1,11 @@
 package main.java;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.security.KeyStore;
@@ -9,6 +14,8 @@ import java.security.PublicKey;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.KeySpec;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -19,20 +26,22 @@ import javax.crypto.spec.SecretKeySpec;
 public class API {
 
 	private KeyStore keyStore;
+	private String clientId;
 	private String password;
 	private InterfaceRMI stub;
 	private PublicKey serverKey;
 	private PublicKey publicKey;
 	private PrivateKey privateKey;
-	
 	private SecretKey secretKey;
-	
 	private byte[] salt_bytes = "salty".getBytes();
+	
+	private Map<String, Long> timestampMap;
 	
 	public void init(KeyStore key, String id, String pass){
 		keyStore = key;
 		password = pass;
-				
+		clientId = id;
+		timestampMap = new HashMap<String, Long>();
 		try{
 			keyStore.load(new FileInputStream("src/main/resources/keystore_" + id +".jks"), password.toCharArray());
 			Registry registry = LocateRegistry.getRegistry(8000);
@@ -50,6 +59,8 @@ public class API {
 			KeySpec spec = new PBEKeySpec(password.toCharArray(), salt_bytes, 1024, 128);
 			SecretKey tmp = factory.generateSecret(spec);
 			secretKey = new SecretKeySpec(tmp.getEncoded(), "AES"); 
+			
+			loadData();		
 		}
 		catch (Exception e) {
         	System.err.println("Client exception: " + e.toString());
@@ -82,10 +93,22 @@ public class API {
 			byte[][] bytes = stub.getChallenge(publicKey);
 			
 			if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
-				byte[] d = Crypto.encodeBase64(encrypt(secretKey, domain));
-				byte[] u = Crypto.encodeBase64(encrypt(secretKey, username));
-				byte[] p = Crypto.encodeBase64(encrypt(secretKey, password));
-				byte[] t = Crypto.decrypt(privateKey, Crypto.decodeBase64(bytes[0]));
+				long currentTime = Crypto.getTimeLong();
+				byte[] d = Crypto.encodeBase64(
+						   encrypt(secretKey, 
+								   Crypto.concatenateBytes(domain,Crypto.convertTime(currentTime))));
+				byte[] u = Crypto.encodeBase64(
+						   encrypt(secretKey, 
+								   Crypto.concatenateBytes(username,Crypto.convertTime(currentTime+1))));
+				byte[] p = Crypto.encodeBase64(
+						   encrypt(secretKey, 
+								   Crypto.concatenateBytes(password,"||".getBytes(),Crypto.convertTime(currentTime+2))));
+				byte[] t = Crypto.decrypt(
+						   privateKey, 
+						   Crypto.decodeBase64(bytes[0]));
+				
+				saveTimestampData(new String(domain) + "||" + new String(username), currentTime);
+				
 				byte[] token = Crypto.encodeBase64(Crypto.encrypt(serverKey, Crypto.nextToken(t)));
 				stub.put(publicKey, 
 						 d, 
@@ -108,9 +131,13 @@ public class API {
 		try{
 			byte[][] bytes = stub.getChallenge(publicKey);
 			if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
-			
-				byte[] d = Crypto.encodeBase64(encrypt(secretKey, domain));
-				byte[] u = Crypto.encodeBase64(encrypt(secretKey, username));
+				long timestamp = getTimestampFromKey(new String(domain) + "||" + new String(username));
+				byte[] d = Crypto.encodeBase64(
+						   encrypt(secretKey, 
+								   Crypto.concatenateBytes(domain,Crypto.convertTime(timestamp))));
+				byte[] u = Crypto.encodeBase64(
+						   encrypt(secretKey, 
+								   Crypto.concatenateBytes(username,Crypto.convertTime(timestamp+1))));
 				byte[] t = Crypto.decrypt(privateKey, Crypto.decodeBase64(bytes[0]));
 				byte[] token = Crypto.encodeBase64(Crypto.encrypt(serverKey, Crypto.nextToken(t)));
 				byte[] password = stub.get(publicKey, 
@@ -162,5 +189,43 @@ public class API {
 
 	public PrivateKey getPrivateKey() {
 		return privateKey;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void loadData(){
+		try{
+			FileInputStream fileIn = new FileInputStream("src/main/resources/timestamps"+clientId+".ser");
+			ObjectInputStream in = new ObjectInputStream(fileIn);
+			timestampMap = (HashMap<String, Long>)in.readObject();
+			in.close();
+			fileIn.close();
+		}catch(FileNotFoundException f){
+			System.out.println("Timestamp data not found, not loading file...");
+		}catch(IOException e){
+			e.printStackTrace();
+		}catch(ClassNotFoundException c){
+	        c.printStackTrace();
+		}
+	}
+	
+	public void saveData(){
+		try{
+			FileOutputStream fileOut = new FileOutputStream("src/main/resources/timestamps"+clientId+".ser");
+			ObjectOutputStream out = new ObjectOutputStream(fileOut);
+			out.writeObject(timestampMap);
+			out.close();
+			fileOut.close();
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	
+	public void saveTimestampData(String key, long value){
+		timestampMap.put(key, value);
+		saveData();
+	}
+	
+	public Long getTimestampFromKey(String key){
+		return timestampMap.get(key);
 	}
 }

@@ -1,9 +1,6 @@
 package main.java;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
@@ -12,8 +9,6 @@ import java.util.Base64;
 import javax.crypto.Cipher;
 
 public class Crypto {
-	
-	private static long MILLISECONDS = 2000;
 	
 	public static byte[] encrypt(PublicKey key, byte[] plaintext){
 		try{
@@ -97,16 +92,21 @@ public class Crypto {
 		return time.getBytes();
 	}
 	
+	public static long getTimeLong(){
+		long curTime = System.currentTimeMillis();
+		return curTime;
+	}
+	
+	public static byte[] convertTime(long time){
+		String t = String.valueOf(time);
+		return t.getBytes();
+	}
+	
 	public static long decodeTime(byte[] time){
 		String curTime = new String(time);
 		return Long.valueOf(curTime);
 	}
-	
-	public static boolean withinTime(long receivedTime){
-		long time = System.currentTimeMillis();
-		return (time >= receivedTime && time <= receivedTime + MILLISECONDS);
-	}
-	
+
 	public static byte[][] getByteList(byte[] ... data){
 		int count = data.length;
 		byte[][] bytes = new byte[2][];

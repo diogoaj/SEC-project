@@ -4,7 +4,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.PrivateKey;
 import java.security.PublicKey;
 
 import org.junit.After;
