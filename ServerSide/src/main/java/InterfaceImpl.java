@@ -27,15 +27,15 @@ public class InterfaceImpl implements InterfaceRMI{
 	
 	public byte[][] getChallenge(Key publicKey){
 		long l = rand.nextLong();
-		byte[] token = Crypto.encodeBase64(Crypto.encrypt((PublicKey) publicKey, String.valueOf(l).getBytes()));
+		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA((PublicKey) publicKey, String.valueOf(l).getBytes()));
 		tokenMap.put(publicKey, l + 1);
-		return Crypto.getByteList(token, Crypto.signData(manager.getServerPrivateKey(), token));
+		return Token.getByteList(token, Crypto.signData(manager.getServerPrivateKey(), token));
 	}
 	
 	public void register(Key publicKey, byte[] token, byte[] signedData) throws RemoteException {
 		if(Crypto.verifySignature((PublicKey) publicKey, Crypto.concatenateBytes(publicKey.getEncoded(), token), signedData)){
-			byte[] t = Crypto.decrypt(manager.getServerPrivateKey(), Crypto.decodeBase64(token));
-			long tokenToVerify = Crypto.getLong(t);
+			byte[] t = Crypto.decryptRSA(manager.getServerPrivateKey(), Crypto.decodeBase64(token));
+			long tokenToVerify = Time.getLong(t);
 			if(tokenToVerify == tokenMap.get(publicKey)){
 				tokenMap.put(publicKey, (long) 0);
 				User user = new User(publicKey);
@@ -53,8 +53,8 @@ public class InterfaceImpl implements InterfaceRMI{
 		User user = manager.getUser(publicKey);
 		if(user != null){
 			if(Crypto.verifySignature((PublicKey) publicKey, Crypto.concatenateBytes(domain,username,password,token), signedData)){
-				byte[] t = Crypto.decrypt(manager.getServerPrivateKey(), Crypto.decodeBase64(token));
-				long tokenToVerify = Crypto.getLong(t);
+				byte[] t = Crypto.decryptRSA(manager.getServerPrivateKey(), Crypto.decodeBase64(token));
+				long tokenToVerify = Time.getLong(t);
 				if(tokenToVerify == tokenMap.get(publicKey)){
 					manager.addPasswordEntry(user,domain,username,password);
 				}
@@ -75,8 +75,8 @@ public class InterfaceImpl implements InterfaceRMI{
 		User user = manager.getUser(publicKey);
 		if(user != null){
 			if(Crypto.verifySignature((PublicKey) publicKey, Crypto.concatenateBytes(domain,username,token), signedData)){
-				byte[] t = Crypto.decrypt(manager.getServerPrivateKey(), Crypto.decodeBase64(token));
-				long tokenToVerify = Crypto.getLong(t);
+				byte[] t = Crypto.decryptRSA(manager.getServerPrivateKey(), Crypto.decodeBase64(token));
+				long tokenToVerify = Time.getLong(t);
 				if(tokenToVerify == tokenMap.get(publicKey)){
 					return manager.getUserPassword(user,domain,username);
 				}

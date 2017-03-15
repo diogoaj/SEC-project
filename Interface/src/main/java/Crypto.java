@@ -10,7 +10,7 @@ import javax.crypto.Cipher;
 
 public class Crypto {
 	
-	public static byte[] encrypt(PublicKey key, byte[] plaintext){
+	public static byte[] encryptRSA(PublicKey key, byte[] plaintext){
 		try{
 		    Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");   
 		    cipher.init(Cipher.ENCRYPT_MODE, key);  
@@ -23,7 +23,7 @@ public class Crypto {
 		return null;
 	}
 	
-	public static byte[] decrypt(PrivateKey key, byte[] ciphertext){
+	public static byte[] decryptRSA(PrivateKey key, byte[] ciphertext){
 		try{
 		    Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");   
 		    cipher.init(Cipher.DECRYPT_MODE, key);  
@@ -84,47 +84,5 @@ public class Crypto {
 		}
 
 		return outputStream.toByteArray();
-	}
-	
-	public static byte[] getTime(){
-		long curTime = System.currentTimeMillis();
-		String time = String.valueOf(curTime);
-		return time.getBytes();
-	}
-	
-	public static long getTimeLong(){
-		long curTime = System.currentTimeMillis();
-		return curTime;
-	}
-	
-	public static byte[] convertTime(long time){
-		String t = String.valueOf(time);
-		return t.getBytes();
-	}
-	
-	public static long decodeTime(byte[] time){
-		String curTime = new String(time);
-		return Long.valueOf(curTime);
-	}
-
-	public static byte[][] getByteList(byte[] ... data){
-		int count = data.length;
-		byte[][] bytes = new byte[2][];
-		for(int i = 0; i< count; i++){
-			bytes[i] = data[i];
-		}
-		return bytes;
-	}
-	
-	public static byte[] nextToken(byte[] data){
-		String tokenString = new String(data);
-		long tokenToSend = Long.valueOf(tokenString) + 1;
-		tokenString = String.valueOf(tokenToSend);
-		return tokenString.getBytes();
-	}
-	
-	public static long getLong(byte[] data){
-		String tokenString = new String(data);
-		return Long.valueOf(tokenString);
 	}
 }

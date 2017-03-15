@@ -14,6 +14,7 @@ import org.junit.Test;
 
 import main.java.Crypto;
 import main.java.InterfaceImpl;
+import main.java.Token;
 import main.java.business.PasswordManager;
 import main.java.business.User;
 
@@ -38,14 +39,14 @@ public class ServerPutTest {
     	
     	// Register user1
     	byte[][] received = interfacermi.getChallenge(public1);
-    	byte[] t = Crypto.decrypt(private1, Crypto.decodeBase64(received[0]));
-		byte[] token = Crypto.encodeBase64(Crypto.encrypt(pm.getServerPublicKey(), Crypto.nextToken(t)));
+    	byte[] t = Crypto.decryptRSA(private1, Crypto.decodeBase64(received[0]));
+		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
     	interfacermi.register(public1, token, Crypto.signData(private1, Crypto.concatenateBytes(public1.getEncoded(), token)));
     	
     	// Register user2
     	received = interfacermi.getChallenge(public2);
-    	t = Crypto.decrypt(private2, Crypto.decodeBase64(received[0]));
-		token = Crypto.encodeBase64(Crypto.encrypt(pm.getServerPublicKey(), Crypto.nextToken(t)));
+    	t = Crypto.decryptRSA(private2, Crypto.decodeBase64(received[0]));
+		token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
     	interfacermi.register(public2, token, Crypto.signData(private2, Crypto.concatenateBytes(public2.getEncoded(), token)));
     }
     

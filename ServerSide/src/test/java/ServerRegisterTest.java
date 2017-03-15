@@ -13,6 +13,7 @@ import org.junit.Test;
 
 import main.java.Crypto;
 import main.java.InterfaceImpl;
+import main.java.Token;
 import main.java.business.PasswordManager;
 
 
@@ -46,8 +47,8 @@ public class ServerRegisterTest {
     	boolean verified = Crypto.verifySignature(pm.getServerPublicKey(), received[0], received[1]);
     	assertTrue(verified);
     	
-    	byte[] t = Crypto.decrypt(privateKey, Crypto.decodeBase64(received[0]));
-		byte[] token = Crypto.encodeBase64(Crypto.encrypt(pm.getServerPublicKey(), Crypto.nextToken(t)));
+    	byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(received[0]));
+		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
 		
     	interfacermi.register(publicKey, token, Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
     	
@@ -67,8 +68,8 @@ public class ServerRegisterTest {
 	    	boolean verified = Crypto.verifySignature(pm.getServerPublicKey(), received[0], received[1]);
 	    	assertTrue(verified);
 	    	
-	    	byte[] t = Crypto.decrypt(privateKey, Crypto.decodeBase64(received[0]));
-			byte[] token = Crypto.encodeBase64(Crypto.encrypt(pm.getServerPublicKey(), Crypto.nextToken(t)));
+	    	byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(received[0]));
+			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
 			
 	    	interfacermi.register(publicKey, token, Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
     	}
@@ -84,8 +85,8 @@ public class ServerRegisterTest {
     	PrivateKey privateKey = kp.getPrivate();
 
     	byte[][] received = interfacermi.getChallenge(publicKey);
-    	byte[] t = Crypto.decrypt(privateKey, Crypto.decodeBase64(received[0]));
-		byte[] token = Crypto.encodeBase64(Crypto.encrypt(pm.getServerPublicKey(), Crypto.nextToken(t)));
+    	byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(received[0]));
+		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
     	
     	interfacermi.register(publicKey, token, Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
     	// Replay attack should not be possible
@@ -106,8 +107,8 @@ public class ServerRegisterTest {
     	boolean verified = Crypto.verifySignature(pm.getServerPublicKey(), received[0], received[1]);
     	assertTrue(verified);
     	
-    	byte[] t = Crypto.decrypt(privateKeyAttacker, Crypto.decodeBase64(received[0]));
-		byte[] token = Crypto.encodeBase64(Crypto.encrypt(pm.getServerPublicKey(), Crypto.nextToken(t)));
+    	byte[] t = Crypto.decryptRSA(privateKeyAttacker, Crypto.decodeBase64(received[0]));
+		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
     	
     	interfacermi.register(publicKey, token, Crypto.signData(privateKeyAttacker, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
     	

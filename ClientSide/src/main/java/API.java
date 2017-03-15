@@ -72,8 +72,8 @@ public class API {
 		try{
 			byte[][] bytes = stub.getChallenge(publicKey);
 			if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
-				byte[] t = Crypto.decrypt(privateKey, Crypto.decodeBase64(bytes[0]));
-				byte[] token = Crypto.encodeBase64(Crypto.encrypt(serverKey, Crypto.nextToken(t)));
+				byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(bytes[0]));
+				byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
 				stub.register(publicKey,
 						      token,
 					          Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
@@ -93,23 +93,23 @@ public class API {
 			byte[][] bytes = stub.getChallenge(publicKey);
 			
 			if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
-				long currentTime = Crypto.getTimeLong();
+				long currentTime = Time.getTimeLong();
 				byte[] d = Crypto.encodeBase64(
 						   encrypt(secretKey, 
-								   Crypto.concatenateBytes(domain,Crypto.convertTime(currentTime))));
+								   Crypto.concatenateBytes(domain,Time.convertTime(currentTime))));
 				byte[] u = Crypto.encodeBase64(
 						   encrypt(secretKey, 
-								   Crypto.concatenateBytes(username,Crypto.convertTime(currentTime+1))));
+								   Crypto.concatenateBytes(username,Time.convertTime(currentTime+1))));
 				byte[] p = Crypto.encodeBase64(
 						   encrypt(secretKey, 
-								   Crypto.concatenateBytes(password,"||".getBytes(),Crypto.convertTime(currentTime+2))));
-				byte[] t = Crypto.decrypt(
+								   Crypto.concatenateBytes(password,"||".getBytes(),Time.convertTime(currentTime+2))));
+				byte[] t = Crypto.decryptRSA(
 						   privateKey, 
 						   Crypto.decodeBase64(bytes[0]));
 				
 				saveTimestampData(new String(domain) + "||" + new String(username), currentTime);
 				
-				byte[] token = Crypto.encodeBase64(Crypto.encrypt(serverKey, Crypto.nextToken(t)));
+				byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
 				stub.put(publicKey, 
 						 d, 
 						 u, 
@@ -134,12 +134,12 @@ public class API {
 				long timestamp = getTimestampFromKey(new String(domain) + "||" + new String(username));
 				byte[] d = Crypto.encodeBase64(
 						   encrypt(secretKey, 
-								   Crypto.concatenateBytes(domain,Crypto.convertTime(timestamp))));
+								   Crypto.concatenateBytes(domain,Time.convertTime(timestamp))));
 				byte[] u = Crypto.encodeBase64(
 						   encrypt(secretKey, 
-								   Crypto.concatenateBytes(username,Crypto.convertTime(timestamp+1))));
-				byte[] t = Crypto.decrypt(privateKey, Crypto.decodeBase64(bytes[0]));
-				byte[] token = Crypto.encodeBase64(Crypto.encrypt(serverKey, Crypto.nextToken(t)));
+								   Crypto.concatenateBytes(username,Time.convertTime(timestamp+1))));
+				byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(bytes[0]));
+				byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
 				byte[] password = stub.get(publicKey, 
 						                   d, 
 						                   u, 
