@@ -6,8 +6,8 @@ import java.security.Key;
 import java.security.PrivateKey;
 
 public interface InterfaceRMI extends Remote {
-    void register(Key publicKey, byte[] token, byte[] signedData) throws RemoteException;
-    void put(Key publicKey, byte[] domain, byte[] username, byte[] password, byte[] token, byte[] signedData) throws RemoteException;
-    byte[] get(Key publicKey, byte[] domain, byte[] username, byte[] token, byte[] signedData) throws RemoteException;
+    byte[][] register(Key publicKey, byte[] token, byte[] signedData) throws RemoteException;
+    byte[][] put(Key publicKey, byte[] domain, byte[] username, byte[] password, byte[] token, byte[] signedData) throws RemoteException;
+    byte[][] get(Key publicKey, byte[] domain, byte[] username, byte[] token, byte[] signedData) throws RemoteException;
     byte[][] getChallenge(Key publicKey) throws RemoteException;
 }

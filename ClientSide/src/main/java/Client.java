@@ -36,17 +36,51 @@ public class Client {
                 }
             	
             	switch(n){
-            		case 1:
-            			library.register_user();
-            			System.out.println("User registered\n");
+            		case 1:{
+            			int value = library.register_user();
+            			
+            			if(value == -1)
+        					break;
+        				
+        				if(value == 2){
+        					System.out.println("User registered\n");
+        				}
+        				else if(value == 1){
+        					System.out.println("User token was incorrect\n");
+        				}
+        				else if(value == 0){
+        					System.out.println("User signature was invalid\n");
+        				}
+        				else{
+        					System.out.println("Unknown problem\n");
+        				}
             			break;
+            		}
             		
-            		case 2:
-            			save();
-            			System.out.println("Password saved\n");
+            		case 2:{
+            			int value = save();
+            			if(value == -1)
+        					break;
+        				
+        				if(value == 3){
+        					System.out.println("Passowrd saved\n");
+        				}
+        				else if(value == 2){
+        					System.out.println("User token was incorrect\n");
+        				}
+        				else if(value == 1){
+        					System.out.println("User signature was invalid\n");
+        				}
+        				else if(value == 0){
+        					System.out.println("Register first!\n");
+        				}
+        				else{
+        					System.out.println("Unknown problem\n");
+        				}
             			break;
+            		}
             		
-            		case 3:
+            		case 3:{
             			byte[] retrieved = retrieve();
             			if(retrieved == null){
             				System.out.println("Password not found!\n");
@@ -57,6 +91,7 @@ public class Client {
             				System.out.println("Your password is: " + pwd[0] + "\n");
             			}
             			break;
+            		}
             			
             		case 4:
             			library.close();
@@ -73,14 +108,14 @@ public class Client {
     	}
 	}
 	
-	private static void save() throws UnsupportedEncodingException{
+	private static int save() throws UnsupportedEncodingException{
 		System.out.println("What domain?");
 		String domain = console.readLine();
 		System.out.println("What username?");
 		String username = console.readLine();
 		System.out.println("What password?");
 		String password = String.valueOf(console.readPassword());
-		library.save_password(domain.getBytes(), username.getBytes(), password.getBytes());
+		return library.save_password(domain.getBytes(), username.getBytes(), password.getBytes());
 	}
 	
 	private static byte[] retrieve() throws UnsupportedEncodingException{

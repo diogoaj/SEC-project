@@ -68,27 +68,31 @@ public class API {
     	}
 	}
 	
-	public void register_user(){
+	public int register_user(){
 		try{
 			byte[][] bytes = stub.getChallenge(publicKey);
 			if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
 				byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(bytes[0]));
 				byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
-				stub.register(publicKey,
+				byte[][] returnValue = stub.register(publicKey,
 						      token,
 					          Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
+				
+				return getFeedback(returnValue, bytes, t);
 			}
 			else{
-				System.out.println("Signature not correct!");
+				System.out.println("Server signature not correct!");
+				return -1;
 			}
 		}
 		catch(Exception e){
 			System.err.println("Register user exception: " + e.toString());
         	e.printStackTrace();
+        	return -1;
 		}
 	}
 	
-	public void save_password(byte[] domain, byte[] username, byte[] password){
+	public int save_password(byte[] domain, byte[] username, byte[] password){
 		try{
 			byte[][] bytes = stub.getChallenge(publicKey);
 			
@@ -110,20 +114,24 @@ public class API {
 				saveTimestampData(new String(domain) + "||" + new String(username), currentTime);
 				
 				byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
-				stub.put(publicKey, 
+				byte[][] returnValue = stub.put(publicKey, 
 						 d, 
 						 u, 
 						 p, 
 						 token,
 						 Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,p,token)));
+				
+				return getFeedback(returnValue, bytes, t);
 			}
 			else{
 				System.out.println("Signature not correct!");
+				return -1;
 			}
 		}
 		catch(Exception e){
 			System.err.println("Save password exception: " + e.toString());
         	e.printStackTrace();
+        	return -1;
 		}
 	}
 	
@@ -140,13 +148,21 @@ public class API {
 								   Crypto.concatenateBytes(username,Time.convertTime(timestamp+1))));
 				byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(bytes[0]));
 				byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
-				byte[] password = stub.get(publicKey, 
+				byte[][] returnValue = stub.get(publicKey, 
 						                   d, 
 						                   u, 
 						                   token,
 						                   Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,token)));
-				if(password != null){
-					return decrypt(secretKey, Crypto.decodeBase64(password));
+				
+				int value = getFeedback(returnValue, bytes, t);
+				if(value == 3){
+					byte[] password = returnValue[3];
+					if(password != null){
+						return decrypt(secretKey, Crypto.decodeBase64(password));
+					}
+					else{
+						return null;
+					}
 				}
 				else{
 					return null;
@@ -227,5 +243,23 @@ public class API {
 	
 	public Long getTimestampFromKey(String key){
 		return timestampMap.get(key);
+	}
+	
+	private int getFeedback(byte[][] returnValue, byte[][] bytes, byte[] t){
+		if(Crypto.verifySignature(serverKey, Crypto.concatenateBytes(returnValue[0], returnValue[1]), returnValue[2])){
+			long returnToken = Long.valueOf(new String(Crypto.decryptRSA(privateKey, Crypto.decodeBase64(returnValue[1]))));
+			long lastToken = Long.valueOf(new String(t)) + 1;
+			if(returnToken == lastToken + 1){
+				return Integer.valueOf(new String(Crypto.decryptRSA(privateKey, Crypto.decodeBase64(returnValue[0]))));
+			}
+			else{
+				System.out.println("Server token was incorrect");
+				return -1;
+			}
+		}
+		else{
+			System.out.println("Server signature was incorrect");
+			return -1;
+		}
 	}
 }

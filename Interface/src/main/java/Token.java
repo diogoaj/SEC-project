@@ -3,8 +3,8 @@ package main.java;
 public class Token {
 	public static byte[][] getByteList(byte[] ... data){
 		int count = data.length;
-		byte[][] bytes = new byte[2][];
-		for(int i = 0; i< count; i++){
+		byte[][] bytes = new byte[count][];
+		for(int i = 0; i < count; i++){
 			bytes[i] = data[i];
 		}
 		return bytes;
