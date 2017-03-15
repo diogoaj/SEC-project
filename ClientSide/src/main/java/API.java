@@ -151,4 +151,16 @@ public class API {
 	public void close(){
 		System.exit(0);
 	}
+
+	public PublicKey getServerPublicKey() {
+		return serverKey;
+	}
+
+	public PublicKey getPublicKey() {
+		return publicKey;
+	}
+
+	public PrivateKey getPrivateKey() {
+		return privateKey;
+	}
 }
