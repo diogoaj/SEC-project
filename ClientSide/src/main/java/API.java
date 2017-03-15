@@ -137,7 +137,10 @@ public class API {
 		try{
 			byte[][] bytes = stub.getChallenge(publicKey);
 			if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
-				long timestamp = getTimestampFromKey(new String(domain) + "||" + new String(username));
+				Long timestamp = getTimestampFromKey(new String(domain) + "||" + new String(username));
+				if(timestamp == null){
+					return null;
+				}
 				byte[] d = Crypto.encodeBase64(
 						   encrypt(secretKey, 
 								   Crypto.concatenateBytes(domain,Time.convertTime(timestamp))));
