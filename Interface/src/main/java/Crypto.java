@@ -2,6 +2,8 @@ package main.java;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
@@ -125,5 +127,4 @@ public class Crypto {
 		String tokenString = new String(data);
 		return Long.valueOf(tokenString);
 	}
-	
 }

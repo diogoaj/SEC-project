@@ -8,6 +8,13 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.spec.KeySpec;
+
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
 
 public class API {
 
@@ -17,6 +24,10 @@ public class API {
 	private PublicKey serverKey;
 	private PublicKey publicKey;
 	private PrivateKey privateKey;
+	
+	private SecretKey secretKey;
+	
+	private byte[] salt_bytes = "salty".getBytes();
 	
 	public void init(KeyStore key, String id, String pass){
 		keyStore = key;
@@ -33,6 +44,12 @@ public class API {
 	    	
 	    	privateKey = (PrivateKey)keyStore.getKey("clientkeystore", password.toCharArray());
 	    	publicKey = keyStore.getCertificate("clientkeystore").getPublicKey();
+	    	
+	    	// Generate static secret key
+	    	SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+			KeySpec spec = new PBEKeySpec(password.toCharArray(), salt_bytes, 1024, 128);
+			SecretKey tmp = factory.generateSecret(spec);
+			secretKey = new SecretKeySpec(tmp.getEncoded(), "AES"); 
 		}
 		catch (Exception e) {
         	System.err.println("Client exception: " + e.toString());
@@ -63,13 +80,13 @@ public class API {
 	public void save_password(byte[] domain, byte[] username, byte[] password){
 		try{
 			byte[][] bytes = stub.getChallenge(publicKey);
+			
 			if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
-				byte[] d = Crypto.encodeBase64(Crypto.encrypt(serverKey, domain));
-				byte[] u = Crypto.encodeBase64(Crypto.encrypt(serverKey, username));
-				byte[] p = Crypto.encodeBase64(Crypto.encrypt(publicKey, password));
+				byte[] d = Crypto.encodeBase64(encrypt(secretKey, domain));
+				byte[] u = Crypto.encodeBase64(encrypt(secretKey, username));
+				byte[] p = Crypto.encodeBase64(encrypt(secretKey, password));
 				byte[] t = Crypto.decrypt(privateKey, Crypto.decodeBase64(bytes[0]));
 				byte[] token = Crypto.encodeBase64(Crypto.encrypt(serverKey, Crypto.nextToken(t)));
-				
 				stub.put(publicKey, 
 						 d, 
 						 u, 
@@ -92,8 +109,8 @@ public class API {
 			byte[][] bytes = stub.getChallenge(publicKey);
 			if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
 			
-				byte[] d = Crypto.encodeBase64(Crypto.encrypt(serverKey, domain));
-				byte[] u = Crypto.encodeBase64(Crypto.encrypt(serverKey, username));
+				byte[] d = Crypto.encodeBase64(encrypt(secretKey, domain));
+				byte[] u = Crypto.encodeBase64(encrypt(secretKey, username));
 				byte[] t = Crypto.decrypt(privateKey, Crypto.decodeBase64(bytes[0]));
 				byte[] token = Crypto.encodeBase64(Crypto.encrypt(serverKey, Crypto.nextToken(t)));
 				byte[] password = stub.get(publicKey, 
@@ -102,7 +119,7 @@ public class API {
 						                   token,
 						                   Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,token)));
 				if(password != null){
-					return Crypto.decrypt(privateKey, Crypto.decodeBase64(password));
+					return decrypt(secretKey, Crypto.decodeBase64(password));
 				}
 				else{
 					return null;
@@ -118,6 +135,18 @@ public class API {
 		}
 		return null;
 	}
+	
+	 public byte[] encrypt(SecretKey key, byte[] plaintext)throws Exception{
+	      Cipher cipher = Cipher.getInstance("AES");
+	      cipher.init(Cipher.ENCRYPT_MODE, key);
+	      return cipher.doFinal(plaintext);
+	   }
+	 
+	 public byte[] decrypt(SecretKey key, byte[] ciphertext)throws Exception{
+	      Cipher cipher = Cipher.getInstance("AES");
+	      cipher.init(Cipher.DECRYPT_MODE, key);
+	      return cipher.doFinal(ciphertext);
+	   }
 	
 	public void close(){
 		System.exit(0);

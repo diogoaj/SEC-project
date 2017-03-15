@@ -23,19 +23,15 @@ public class User implements Serializable{
 	}
 	
 	public void addPasswordEntry(PasswordEntry p){
-		int found = 0;
 		for (int i = 0; i < userData.size(); i++) {
 			if(Arrays.equals(userData.get(i).getDomain(), p.getDomain()) &&
 				Arrays.equals(userData.get(i).getUsername(), p.getUsername())){
 				userData.get(i).setPassword(p.getPassword());
 				System.out.println("Password Updated");
-				found = 1;
-				break;
+				return;
 			}
 		}
-		if (found == 0){
-			userData.add(p);
-		}
+		userData.add(p);
 	}
 	
 	public byte[] getPassword(byte[] domain, byte[] username){

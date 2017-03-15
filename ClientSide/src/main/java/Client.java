@@ -1,6 +1,7 @@
 package main.java;
 
 import java.io.Console;
+import java.io.UnsupportedEncodingException;
 import java.security.KeyStore;
 
 public class Client {
@@ -70,7 +71,7 @@ public class Client {
     	}
 	}
 	
-	private static void save(){
+	private static void save() throws UnsupportedEncodingException{
 		System.out.println("What domain?");
 		String domain = console.readLine();
 		System.out.println("What username?");
@@ -80,7 +81,7 @@ public class Client {
 		library.save_password(domain.getBytes(), username.getBytes(), password.getBytes());
 	}
 	
-	private static byte[] retrieve(){
+	private static byte[] retrieve() throws UnsupportedEncodingException{
 		System.out.println("What domain?");
 		String domain = console.readLine();
 		System.out.println("What username?");

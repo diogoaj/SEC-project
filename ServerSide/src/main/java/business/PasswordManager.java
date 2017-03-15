@@ -1,12 +1,12 @@
 package main.java.business;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.security.Key;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -18,6 +18,7 @@ public class PasswordManager {
 	private List<User> users;
 	private PublicKey serverPublicKey;
 	private PrivateKey serverPrivateKey;
+	
 	public PasswordManager(){
 		users = new ArrayList<User>();
 		try{
@@ -41,9 +42,22 @@ public class PasswordManager {
 		saveData();
 	}
 	
+	public User getUser(Key key){
+		for (User u: users){
+			if(key.equals(u.getKey())){
+				return u;
+			}
+		}
+		return null;
+	}
+	
 	public void addPasswordEntry(User user, byte[] d, byte[] u, byte[] password) {
 		user.addPasswordEntry(new PasswordEntry(d, u, password));
 		saveData();
+	}
+	
+	public byte[] getUserPassword(User user, byte[] domain, byte[] username) {
+		return user.getPassword(domain, username);
 	}
 	
 	public ArrayList<User> getUsers(){
