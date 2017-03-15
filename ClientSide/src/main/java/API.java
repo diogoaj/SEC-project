@@ -94,10 +94,16 @@ public class API {
 	
 	public int save_password(byte[] domain, byte[] username, byte[] password){
 		try{
+			long currentTime;
 			byte[][] bytes = stub.getChallenge(publicKey);
 			
 			if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
-				long currentTime = Time.getTimeLong();
+				String mapKey = new String(domain) + "||" + new String(username);
+				if(timestampMap.containsKey(mapKey)){
+					currentTime = getTimestampFromKey(mapKey);
+				}else{
+					currentTime = Time.getTimeLong();
+				}
 				byte[] d = Crypto.encodeBase64(
 						   encrypt(secretKey, 
 								   Crypto.concatenateBytes(domain,Time.convertTime(currentTime))));
