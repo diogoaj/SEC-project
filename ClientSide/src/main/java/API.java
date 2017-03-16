@@ -17,7 +17,6 @@ import java.security.spec.KeySpec;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -78,7 +77,7 @@ public class API {
 						      token,
 					          Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
 				
-				return getFeedback(returnValue, bytes, t);
+				return getFeedback(returnValue, bytes, t, false);
 			}
 			else{
 				System.out.println("Server signature not correct!");
@@ -127,7 +126,7 @@ public class API {
 						 token,
 						 Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,p,token)));
 				
-				return getFeedback(returnValue, bytes, t);
+				return getFeedback(returnValue, bytes, t, false);
 			}
 			else{
 				System.out.println("Signature not correct!");
@@ -163,7 +162,7 @@ public class API {
 						                   token,
 						                   Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,token)));
 				
-				int value = getFeedback(returnValue, bytes, t);
+				int value = getFeedback(returnValue, bytes, t, true);
 				if(value == 3){
 					byte[] password = returnValue[3];
 					if(password != null){
@@ -254,8 +253,13 @@ public class API {
 		return timestampMap;
 	}
 	
-	public int getFeedback(byte[][] returnValue, byte[][] bytes, byte[] t){
-		if(Crypto.verifySignature(serverKey, Crypto.concatenateBytes(returnValue[0], returnValue[1]), returnValue[2])){
+	public int getFeedback(byte[][] returnValue, byte[][] bytes, byte[] t, boolean hasPassword){
+		boolean check;
+		if(!hasPassword)
+			check = Crypto.verifySignature(serverKey, Crypto.concatenateBytes(returnValue[0], returnValue[1]), returnValue[2]);
+		else
+			check = Crypto.verifySignature(serverKey, Crypto.concatenateBytes(returnValue[0], returnValue[1], returnValue[3]), returnValue[2]);
+		if(check){
 			long returnToken = Long.valueOf(new String(Crypto.decryptRSA(privateKey, Crypto.decodeBase64(returnValue[1]))));
 			long lastToken = Long.valueOf(new String(t)) + 1;
 			if(returnToken == lastToken + 1){

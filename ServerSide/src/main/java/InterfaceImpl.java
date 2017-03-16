@@ -110,8 +110,12 @@ public class InterfaceImpl implements InterfaceRMI{
 		valueBytes = Crypto.encodeBase64(Crypto.encryptRSA((PublicKey) publicKey, valueBytes));
 		byte[] tokenBytes = String.valueOf(token).getBytes();
 		tokenBytes = Crypto.encodeBase64(Crypto.encryptRSA((PublicKey) publicKey, tokenBytes));
-		byte[] signed = Crypto.signData(manager.getServerPrivateKey(), Crypto.concatenateBytes(valueBytes,tokenBytes));
-
+		byte[] signed;
+		if(password != null)
+			signed = Crypto.signData(manager.getServerPrivateKey(), Crypto.concatenateBytes(valueBytes,tokenBytes,password));
+		else
+			signed = Crypto.signData(manager.getServerPrivateKey(), Crypto.concatenateBytes(valueBytes,tokenBytes));
+			
 		return Token.getByteList(valueBytes, tokenBytes, signed, password);
 
 	}
