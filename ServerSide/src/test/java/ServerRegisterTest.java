@@ -42,7 +42,7 @@ public class ServerRegisterTest {
     	PublicKey publicKey = kp.getPublic();
     	PrivateKey privateKey = kp.getPrivate();
 
-    	byte[][] received = interfacermi.getChallenge(publicKey);
+    	byte[][] received = interfacermi.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
     	
     	boolean verified = Crypto.verifySignature(pm.getServerPublicKey(), received[0], received[1]);
     	assertTrue(verified);
@@ -63,7 +63,7 @@ public class ServerRegisterTest {
     	PrivateKey privateKey = kp.getPrivate();
     
     	for (int i = 0; i < 2; i++){
-	    	byte[][] received = interfacermi.getChallenge(publicKey);
+    		byte[][] received = interfacermi.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
 	
 	    	boolean verified = Crypto.verifySignature(pm.getServerPublicKey(), received[0], received[1]);
 	    	assertTrue(verified);
@@ -84,7 +84,7 @@ public class ServerRegisterTest {
     	PublicKey publicKey = kp.getPublic();
     	PrivateKey privateKey = kp.getPrivate();
 
-    	byte[][] received = interfacermi.getChallenge(publicKey);
+    	byte[][] received = interfacermi.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
     	byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(received[0]));
 		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
     	
@@ -107,7 +107,7 @@ public class ServerRegisterTest {
     	PublicKey publicKeyAttacker = kp.getPublic();
     	PrivateKey privateKeyAttacker = kp.getPrivate();
     	
-    	byte[][] received = interfacermi.getChallenge(publicKeyAttacker);
+    	byte[][] received = interfacermi.getChallenge(publicKeyAttacker, Crypto.signData(privateKeyAttacker, publicKeyAttacker.getEncoded()));
     	
     	boolean verified = Crypto.verifySignature(pm.getServerPublicKey(), received[0], received[1]);
     	assertTrue(verified);
@@ -132,7 +132,7 @@ public class ServerRegisterTest {
     	PublicKey publicKeyAttacker = kp.getPublic();
     	
     	
-    	byte[][] received = interfacermi.getChallenge(publicKey);
+    	byte[][] received = interfacermi.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
     	
     	boolean verified = Crypto.verifySignature(pm.getServerPublicKey(), received[0], received[1]);
     	assertTrue(verified);

@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 
 import org.junit.After;
@@ -38,21 +39,23 @@ public class ServerGetChallengeTest {
     public void getChallengeSuccess() throws Exception{
     	KeyPair kp = keyGen.generateKeyPair();
     	PublicKey publicKey = kp.getPublic();
+    	PrivateKey privateKey = kp.getPrivate();
 
-    	byte[][] token = interfacermi.getChallenge(publicKey);
+    	byte[][] bytes = interfacermi.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
     	
-    	assertTrue(Crypto.verifySignature(pm.getServerPublicKey(), token[0], token[1]));
+    	assertTrue(Crypto.verifySignature(pm.getServerPublicKey(), bytes[0], bytes[1]));
     }
     
     @Test
     public void getChallengeTampered() throws Exception{
     	KeyPair kp = keyGen.generateKeyPair();
     	PublicKey publicKey = kp.getPublic();
+    	PrivateKey privateKey = kp.getPrivate();
 
-    	byte[][] token = interfacermi.getChallenge(publicKey);
+    	byte[][] bytes = interfacermi.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
     	
     	byte[] tamperedToken = String.valueOf(10001110).getBytes();
     	
-    	assertFalse(Crypto.verifySignature(pm.getServerPublicKey(), tamperedToken, token[1]));
+    	assertFalse(Crypto.verifySignature(pm.getServerPublicKey(), tamperedToken, bytes[1]));
     }
 }
