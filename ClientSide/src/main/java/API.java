@@ -69,20 +69,27 @@ public class API {
 	
 	public int register_user(){
 		try{
-			byte[][] bytes = stub.getChallenge(publicKey);
-			if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
-				byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(bytes[0]));
-				byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
-				byte[][] returnValue = stub.register(publicKey,
-						      token,
-					          Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
-				
-				return getFeedback(returnValue, bytes, t, false);
+			byte[][] bytes = stub.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
+			if(bytes != null){
+				if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
+					byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(bytes[0]));
+					byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+					byte[][] returnValue = stub.register(publicKey,
+							      token,
+						          Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
+					
+					return getFeedback(returnValue, bytes, t, false);
+				}
+				else{
+					System.out.println("Server signature not correct!");
+					return -1;
+				}
 			}
 			else{
-				System.out.println("Server signature not correct!");
+				System.out.println("Server failed to check signature");
 				return -1;
 			}
+			
 		}
 		catch(Exception e){
 			System.err.println("Register user exception: " + e.toString());
@@ -94,42 +101,48 @@ public class API {
 	public int save_password(byte[] domain, byte[] username, byte[] password){
 		try{
 			long currentTime;
-			byte[][] bytes = stub.getChallenge(publicKey);
+			byte[][] bytes = stub.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
 			
-			if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
-				String mapKey = new String(domain) + "||" + new String(username);
-				if(timestampMap.containsKey(mapKey)){
-					currentTime = getTimestampFromKey(mapKey);
-				}else{
-					currentTime = Time.getTimeLong();
+			if(bytes != null){
+				if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
+					String mapKey = new String(domain) + "||" + new String(username);
+					if(timestampMap.containsKey(mapKey)){
+						currentTime = getTimestampFromKey(mapKey);
+					}else{
+						currentTime = Time.getTimeLong();
+					}
+					byte[] d = Crypto.encodeBase64(
+							   Crypto.encrypt(secretKey, 
+									   Crypto.concatenateBytes(domain,Time.convertTime(currentTime))));
+					byte[] u = Crypto.encodeBase64(
+							   Crypto.encrypt(secretKey, 
+									   Crypto.concatenateBytes(username,Time.convertTime(currentTime+1))));
+					byte[] p = Crypto.encodeBase64(
+							   Crypto.encrypt(secretKey, 
+									   Crypto.concatenateBytes(password,"||".getBytes(),Time.convertTime(currentTime+2))));
+					byte[] t = Crypto.decryptRSA(
+							   privateKey, 
+							   Crypto.decodeBase64(bytes[0]));
+					
+					saveTimestampData(new String(domain) + "||" + new String(username), currentTime);
+					
+					byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+					byte[][] returnValue = stub.put(publicKey, 
+							 d, 
+							 u, 
+							 p, 
+							 token,
+							 Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,p,token)));
+					
+					return getFeedback(returnValue, bytes, t, false);
 				}
-				byte[] d = Crypto.encodeBase64(
-						   Crypto.encrypt(secretKey, 
-								   Crypto.concatenateBytes(domain,Time.convertTime(currentTime))));
-				byte[] u = Crypto.encodeBase64(
-						   Crypto.encrypt(secretKey, 
-								   Crypto.concatenateBytes(username,Time.convertTime(currentTime+1))));
-				byte[] p = Crypto.encodeBase64(
-						   Crypto.encrypt(secretKey, 
-								   Crypto.concatenateBytes(password,"||".getBytes(),Time.convertTime(currentTime+2))));
-				byte[] t = Crypto.decryptRSA(
-						   privateKey, 
-						   Crypto.decodeBase64(bytes[0]));
-				
-				saveTimestampData(new String(domain) + "||" + new String(username), currentTime);
-				
-				byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
-				byte[][] returnValue = stub.put(publicKey, 
-						 d, 
-						 u, 
-						 p, 
-						 token,
-						 Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,p,token)));
-				
-				return getFeedback(returnValue, bytes, t, false);
+				else{
+					System.out.println("Signature not correct!");
+					return -1;
+				}
 			}
 			else{
-				System.out.println("Signature not correct!");
+				System.out.println("Server failed to check signature");
 				return -1;
 			}
 		}
@@ -142,8 +155,9 @@ public class API {
 	
 	public byte[] retrieve_password(byte[] domain, byte[] username){
 		try{
-			byte[][] bytes = stub.getChallenge(publicKey);
-			if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
+			byte[][] bytes = stub.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
+			if(bytes != null){
+				if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
 				Long timestamp = getTimestampFromKey(new String(domain) + "||" + new String(username));
 				if(timestamp == null){
 					return null;
@@ -175,6 +189,11 @@ public class API {
 				else{
 					return null;
 				}
+			}
+			else{
+				System.out.println("Server failed to check signature");
+				return null;
+			}
 			}
 			else{
 				System.out.println("Signature incorrect!");

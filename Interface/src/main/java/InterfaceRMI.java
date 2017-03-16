@@ -8,5 +8,5 @@ public interface InterfaceRMI extends Remote {
     byte[][] register(Key publicKey, byte[] token, byte[] signedData) throws RemoteException;
     byte[][] put(Key publicKey, byte[] domain, byte[] username, byte[] password, byte[] token, byte[] signedData) throws RemoteException;
     byte[][] get(Key publicKey, byte[] domain, byte[] username, byte[] token, byte[] signedData) throws RemoteException;
-    byte[][] getChallenge(Key publicKey) throws RemoteException;
+    byte[][] getChallenge(Key publicKey, byte[] signedData) throws RemoteException;
 }

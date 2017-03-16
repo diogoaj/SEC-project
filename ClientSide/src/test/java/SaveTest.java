@@ -61,7 +61,7 @@ public class SaveTest {
 	
 	@Test
 	public void saveWrongToken() throws Exception{
-		byte[][] bytes = stub.getChallenge(publicKey);
+		byte[][] bytes = stub.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
 
 		long currentTime;
 		String mapKey = new String("gmail") + "||" + new String("rito");
@@ -98,7 +98,7 @@ public class SaveTest {
 	
 	@Test
 	public void saveWrongSignature() throws Exception{
-		byte[][] bytes = stub.getChallenge(publicKey);
+		byte[][] bytes = stub.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
 
 		long currentTime;
 		String mapKey = new String("gmail") + "||" + new String("rito");
@@ -137,7 +137,7 @@ public class SaveTest {
 	@Test
 	public void saveWrongServerSignature() throws Exception {
 		
-		byte[][] bytes = stub.getChallenge(publicKey);
+		byte[][] bytes = stub.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
 
 		long currentTime;
 		String mapKey = new String("gmail") + "||" + new String("rito");

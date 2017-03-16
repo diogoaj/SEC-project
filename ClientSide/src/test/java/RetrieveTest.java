@@ -45,7 +45,7 @@ public class RetrieveTest{
 	
 	@Test
 	public void retrieveSuccess() throws Exception{
-		byte[][] bytes = stub.getChallenge(publicKey);
+		byte[][] bytes = stub.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
 		Long timestamp = library.getTimestampFromKey(new String("gmail") + "||" + new String("rito"));
 
 		byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(bytes[0]));
@@ -92,7 +92,7 @@ public class RetrieveTest{
 	
 	@Test
 	public void retrieveWrongToken() throws Exception{
-		byte[][] bytes = stub.getChallenge(publicKey);
+		byte[][] bytes = stub.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
 		Long timestamp = library.getTimestampFromKey(new String("gmail") + "||" + new String("rito"));
 
 		long l = rand.nextLong();
@@ -118,7 +118,7 @@ public class RetrieveTest{
 	
 	@Test
 	public void retrieveWrongSignature() throws Exception{
-		byte[][] bytes = stub.getChallenge(publicKey);
+		byte[][] bytes = stub.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
 		Long timestamp = library.getTimestampFromKey(new String("gmail") + "||" + new String("rito"));
 
 		long l = rand.nextLong();
@@ -145,7 +145,7 @@ public class RetrieveTest{
 	
 	@Test
 	public void retrieveWrongServerSignature() throws Exception{
-		byte[][] bytes = stub.getChallenge(publicKey);
+		byte[][] bytes = stub.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
 		Long timestamp = library.getTimestampFromKey(new String("gmail") + "||" + new String("rito"));
 
 		long l = rand.nextLong();

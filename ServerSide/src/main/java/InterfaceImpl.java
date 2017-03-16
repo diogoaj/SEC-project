@@ -24,11 +24,17 @@ public class InterfaceImpl implements InterfaceRMI{
 		return manager;
 	}
 	
-	public byte[][] getChallenge(Key publicKey){
-		long l = rand.nextLong();
-		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA((PublicKey) publicKey, String.valueOf(l).getBytes()));
-		tokenMap.put(publicKey, l + 1);
-		return Token.getByteList(token, Crypto.signData(manager.getServerPrivateKey(), token));
+	public byte[][] getChallenge(Key publicKey, byte[] signedData){
+		if(Crypto.verifySignature((PublicKey) publicKey, Crypto.concatenateBytes(publicKey.getEncoded()), signedData)){
+			long l = rand.nextLong();
+			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA((PublicKey) publicKey, String.valueOf(l).getBytes()));
+			tokenMap.put(publicKey, l + 1);
+			return Token.getByteList(token, Crypto.signData(manager.getServerPrivateKey(), token));
+		}
+		else{
+			System.out.println("Signature failed");
+			return null;
+		}
 	}
 	
 	public byte[][] register(Key publicKey, byte[] token, byte[] signedData) throws RemoteException {

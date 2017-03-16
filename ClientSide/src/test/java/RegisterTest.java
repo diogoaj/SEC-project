@@ -57,7 +57,7 @@ public class RegisterTest {
 	
 	@Test
 	public void registerWrongToken() throws RemoteException {
-		byte[][] bytes = stub.getChallenge(publicKey);
+		byte[][] bytes = stub.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
 		
 		long l = rand.nextLong();
 		byte[] t = String.valueOf(l).getBytes();
@@ -71,7 +71,7 @@ public class RegisterTest {
 	
 	@Test
 	public void registerWrongSignature() throws RemoteException {
-		byte[][] bytes = stub.getChallenge(publicKey);
+		byte[][] bytes = stub.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
 
 		long l = rand.nextLong();
 		byte[] t = String.valueOf(l).getBytes();
@@ -86,7 +86,7 @@ public class RegisterTest {
 	
 	@Test
 	public void registerWrongServerSignature() throws RemoteException {
-		byte[][] bytes = stub.getChallenge(publicKey);
+		byte[][] bytes = stub.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
 		byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(bytes[0]));
 		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
 		byte[][] returnValue = stub.register(publicKey,
