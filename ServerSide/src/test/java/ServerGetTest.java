@@ -1,18 +1,13 @@
 package test.java;
 
-import static org.junit.Assert.assertTrue;
-
 import java.security.Key;
 import java.security.KeyPairGenerator;
-import java.util.Arrays;
 
 import org.junit.After;
 import org.junit.BeforeClass;
-import org.junit.Test;
 
 import main.java.InterfaceImpl;
 import main.java.business.PasswordManager;
-import main.java.business.User;
 
 public class ServerGetTest {
 	private static InterfaceImpl interfacermi;

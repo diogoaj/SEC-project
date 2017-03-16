@@ -2,7 +2,6 @@ package test.java;
 
 import static org.junit.Assert.assertTrue;
 
-import java.security.Key;
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.PublicKey;

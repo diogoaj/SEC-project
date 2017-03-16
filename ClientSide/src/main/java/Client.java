@@ -42,8 +42,11 @@ public class Client {
             			if(value == -1)
         					break;
         				
+            			if(value == 3){
+            				System.out.println("User registered\n");
+            			}
         				if(value == 2){
-        					System.out.println("User registered\n");
+        					System.out.println("User already registered\n");
         				}
         				else if(value == 1){
         					System.out.println("User token was incorrect\n");

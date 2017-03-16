@@ -31,15 +31,16 @@ public class PasswordManager {
 		}
 	}
 	
-	public void addUser(User user){
+	public boolean addUser(User user){
 		for(User u : users){
 			if (u.getKey().equals(user.getKey())){
 				System.out.println("User already exists!");
-				return;
+				return false;
 			}
 		}
 		users.add(user);
 		saveData();
+		return true;
 	}
 	
 	public User getUser(Key key){
