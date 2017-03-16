@@ -10,17 +10,17 @@ import java.security.Key;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PasswordManager {
 	
-	private List<User> users;
+	private Map<PublicKey, User> users;
 	private PublicKey serverPublicKey;
 	private PrivateKey serverPrivateKey;
 	
 	public PasswordManager(){
-		users = new ArrayList<User>();
+		users = new HashMap<PublicKey, User>();
 		try{
 			KeyStore ks = KeyStore.getInstance("JKS");
 			ks.load(new FileInputStream("src/main/resources/server_keystore.jks"), "serverpass".toCharArray());
@@ -32,23 +32,16 @@ public class PasswordManager {
 	}
 	
 	public void addUser(User user){
-		for(User u : users){
-			if (u.getKey().equals(user.getKey())){
-				System.out.println("User already exists!");
-				return;
-			}
+		if(users.containsKey(user.getKey())){
+			System.out.println("User already exists!");
+			return;
 		}
-		users.add(user);
+		users.put((PublicKey) user.getKey(), user);
 		saveData();
 	}
 	
 	public User getUser(Key key){
-		for (User u: users){
-			if(key.equals(u.getKey())){
-				return u;
-			}
-		}
-		return null;
+		return users.get(key);
 	}
 	
 	public void addPasswordEntry(User user, byte[] d, byte[] u, byte[] password) {
@@ -60,8 +53,8 @@ public class PasswordManager {
 		return user.getPassword(domain, username);
 	}
 	
-	public ArrayList<User> getUsers(){
-		return (ArrayList<User>) users;
+	public HashMap<PublicKey, User> getUsers(){
+		return (HashMap<PublicKey, User>) users;
 	}
 	
 	public PublicKey getServerPublicKey(){
@@ -77,7 +70,7 @@ public class PasswordManager {
 		try{
 			FileInputStream fileIn = new FileInputStream("src/main/resources/userData.ser");
 			ObjectInputStream in = new ObjectInputStream(fileIn);
-			users = (ArrayList<User>)in.readObject();
+			users = (HashMap<PublicKey, User>)in.readObject();
 			in.close();
 			fileIn.close();
 		}catch(FileNotFoundException f){
