@@ -19,7 +19,7 @@ cd ClientSide/
 mvn exec:java -Dexec.mainClass="main.java.Client" -Dexec.args="{keystore_id} {keystore_password}"
 ```
 
-## Without Maven
+## Without Maven [Recommended] 
 ### To run Server:
 ```
 cd ServerSide/
@@ -32,8 +32,15 @@ cd ClientSide/
 java -cp "target/classes/;../Interface/target/classes" main.java.Client {keystore_id} {keystore_pass}
 ```
 
-## To run tests [With Maven]:
+## To run Server tests:
 ```
-In main folder:
+cd ServerSide/
+mvn test
+```
+
+## To run Client tests:
+```
+run Server on another terminal
+cd ClientSide/
 mvn test
 ```
