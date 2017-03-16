@@ -65,7 +65,7 @@ public class RegisterTest {
 		byte[][] returnValue = stub.register(publicKey,
 			      token,
 		          Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
-		int value = library.getFeedback(returnValue, bytes, t, false);
+		int value = library.getFeedback(returnValue, bytes, t);
 		assertEquals(value,1);
 	}
 	
@@ -80,7 +80,7 @@ public class RegisterTest {
 		byte[][] returnValue = stub.register(publicKey,
 			      token,
 		          Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token_wrong)));
-		int value = library.getFeedback(returnValue, bytes, t, false);
+		int value = library.getFeedback(returnValue, bytes, t);
 		assertEquals(value,0);
 	}
 	
@@ -99,7 +99,7 @@ public class RegisterTest {
 		
 		returnValue[1] = token2;
 		
-		int value = library.getFeedback(returnValue, bytes, token, false);
+		int value = library.getFeedback(returnValue, bytes, token);
 		
 		assertEquals(value,-1);
 	}

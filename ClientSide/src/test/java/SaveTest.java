@@ -92,7 +92,7 @@ public class SaveTest {
 				 Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,p,token)));
 
 		
-		int value = library.getFeedback(returnValue, bytes, t, false);
+		int value = library.getFeedback(returnValue, bytes, t);
 		assertEquals(value,2);
 	}
 	
@@ -130,7 +130,7 @@ public class SaveTest {
 				 Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,p,token_wrong)));
 
 		
-		int value = library.getFeedback(returnValue, bytes, t, false);
+		int value = library.getFeedback(returnValue, bytes, t);
 		assertEquals(value,1);
 	}
 	
@@ -175,7 +175,7 @@ public class SaveTest {
 		
 		returnValue[1] = token2;
 		
-		int value = library.getFeedback(returnValue, bytes, t, false);
+		int value = library.getFeedback(returnValue, bytes, t);
 		assertEquals(value,-1);
 	}
 

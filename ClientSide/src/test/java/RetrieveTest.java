@@ -64,7 +64,7 @@ public class RetrieveTest{
 				                   token,
 				                   Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,token)));
 		
-		int value = library.getFeedback(returnValue, bytes, t, true);
+		int value = library.getFeedback(returnValue, bytes, t);
 		assertEquals(value, 3);
 	}
 	
@@ -112,7 +112,7 @@ public class RetrieveTest{
 				                   token,
 				                   Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,token)));
 		
-		int value = library.getFeedback(returnValue, bytes, t, true);
+		int value = library.getFeedback(returnValue, bytes, t);
 		assertEquals(value, 2);
 	}
 	
@@ -139,7 +139,7 @@ public class RetrieveTest{
 				                   token,
 				                   Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,token_wrong)));
 		
-		int value = library.getFeedback(returnValue, bytes, t, true);
+		int value = library.getFeedback(returnValue, bytes, t);
 		assertEquals(value, 1);
 	}
 	
@@ -172,7 +172,7 @@ public class RetrieveTest{
 		
 		returnValue[1] = token2;
 		
-		int value = library.getFeedback(returnValue, bytes, t, true);
+		int value = library.getFeedback(returnValue, bytes, t);
 		assertEquals(value, -1);
 	}
 	
