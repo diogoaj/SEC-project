@@ -105,13 +105,13 @@ public class API {
 					currentTime = Time.getTimeLong();
 				}
 				byte[] d = Crypto.encodeBase64(
-						   encrypt(secretKey, 
+						   Crypto.encrypt(secretKey, 
 								   Crypto.concatenateBytes(domain,Time.convertTime(currentTime))));
 				byte[] u = Crypto.encodeBase64(
-						   encrypt(secretKey, 
+						   Crypto.encrypt(secretKey, 
 								   Crypto.concatenateBytes(username,Time.convertTime(currentTime+1))));
 				byte[] p = Crypto.encodeBase64(
-						   encrypt(secretKey, 
+						   Crypto.encrypt(secretKey, 
 								   Crypto.concatenateBytes(password,"||".getBytes(),Time.convertTime(currentTime+2))));
 				byte[] t = Crypto.decryptRSA(
 						   privateKey, 
@@ -150,10 +150,10 @@ public class API {
 					return null;
 				}
 				byte[] d = Crypto.encodeBase64(
-						   encrypt(secretKey, 
+						   Crypto.encrypt(secretKey, 
 								   Crypto.concatenateBytes(domain,Time.convertTime(timestamp))));
 				byte[] u = Crypto.encodeBase64(
-						   encrypt(secretKey, 
+						   Crypto.encrypt(secretKey, 
 								   Crypto.concatenateBytes(username,Time.convertTime(timestamp+1))));
 				byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(bytes[0]));
 				byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
@@ -167,7 +167,7 @@ public class API {
 				if(value == 3){
 					byte[] password = returnValue[3];
 					if(password != null){
-						return decrypt(secretKey, Crypto.decodeBase64(password));
+						return Crypto.decrypt(secretKey, Crypto.decodeBase64(password));
 					}
 					else{
 						return null;
@@ -187,19 +187,7 @@ public class API {
 		}
 		return null;
 	}
-	
-	 public byte[] encrypt(SecretKey key, byte[] plaintext)throws Exception{
-	      Cipher cipher = Cipher.getInstance("AES");
-	      cipher.init(Cipher.ENCRYPT_MODE, key);
-	      return cipher.doFinal(plaintext);
-	   }
-	 
-	 public byte[] decrypt(SecretKey key, byte[] ciphertext)throws Exception{
-	      Cipher cipher = Cipher.getInstance("AES");
-	      cipher.init(Cipher.DECRYPT_MODE, key);
-	      return cipher.doFinal(ciphertext);
-	   }
-	
+
 	public void close(){
 		System.exit(0);
 	}

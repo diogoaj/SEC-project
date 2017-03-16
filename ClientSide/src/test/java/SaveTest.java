@@ -76,13 +76,13 @@ public class SaveTest {
 		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
 		
 		byte[] d = Crypto.encodeBase64(
-				   library.encrypt(secretKey, 
+				   Crypto.encrypt(secretKey, 
 						   Crypto.concatenateBytes("gmail".getBytes(),Time.convertTime(currentTime))));
 		byte[] u = Crypto.encodeBase64(
-					library.encrypt(secretKey, 
+				   Crypto.encrypt(secretKey, 
 						   Crypto.concatenateBytes("rito".getBytes(),Time.convertTime(currentTime+1))));
 		byte[] p = Crypto.encodeBase64(
-					library.encrypt(secretKey, 
+				   Crypto.encrypt(secretKey, 
 						   Crypto.concatenateBytes("cruz".getBytes(),"||".getBytes(),Time.convertTime(currentTime+2))));
 		byte[][] returnValue = stub.put(publicKey, 
 				 d, 
@@ -114,13 +114,13 @@ public class SaveTest {
 		byte[] token_wrong = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(Token.nextToken(t))));
 		
 		byte[] d = Crypto.encodeBase64(
-				   library.encrypt(secretKey, 
+				   Crypto.encrypt(secretKey, 
 						   Crypto.concatenateBytes("gmail".getBytes(),Time.convertTime(currentTime))));
 		byte[] u = Crypto.encodeBase64(
-					library.encrypt(secretKey, 
+				   Crypto.encrypt(secretKey, 
 						   Crypto.concatenateBytes("rito".getBytes(),Time.convertTime(currentTime+1))));
 		byte[] p = Crypto.encodeBase64(
-					library.encrypt(secretKey, 
+				   Crypto.encrypt(secretKey, 
 						   Crypto.concatenateBytes("cruz".getBytes(),"||".getBytes(),Time.convertTime(currentTime+2))));
 		byte[][] returnValue = stub.put(publicKey, 
 				 d, 

@@ -7,8 +7,22 @@ import java.security.Signature;
 import java.util.Base64;
 
 import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
 
 public class Crypto {
+	
+	 public static byte[] encrypt(SecretKey key, byte[] plaintext)throws Exception{
+	      Cipher cipher = Cipher.getInstance("AES");
+	      cipher.init(Cipher.ENCRYPT_MODE, key);
+	      return cipher.doFinal(plaintext);
+	   }
+	 
+	 public static byte[] decrypt(SecretKey key, byte[] ciphertext)throws Exception{
+	      Cipher cipher = Cipher.getInstance("AES");
+	      cipher.init(Cipher.DECRYPT_MODE, key);
+	      return cipher.doFinal(ciphertext);
+	   }
+    
 	
 	public static byte[] encryptRSA(PublicKey key, byte[] plaintext){
 		try{
