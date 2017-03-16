@@ -45,7 +45,7 @@ public class Client {
             			if(value == 3){
             				System.out.println("User registered\n");
             			}
-        				if(value == 2){
+            			else if(value == 2){
         					System.out.println("User already registered\n");
         				}
         				else if(value == 1){

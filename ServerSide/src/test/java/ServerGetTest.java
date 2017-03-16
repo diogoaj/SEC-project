@@ -84,6 +84,7 @@ public class ServerGetTest {
     	
     	long currentTime = Time.getTimeLong();
 
+    	// Add a password entry to the user
   		byte[] d1 = Crypto.encodeBase64(
   				    Crypto.encrypt(secretKey, 
   					Crypto.concatenateBytes(domain.getBytes(),Time.convertTime(currentTime))));
@@ -96,6 +97,7 @@ public class ServerGetTest {
   		
     	pm.getUser(public1).addPasswordEntry(new PasswordEntry(d1,u1,p1));
     	
+    	// Call get method
     	byte[][] returned = interfacermi.getChallenge(public1);
     	
     	boolean verified = Crypto.verifySignature(pm.getServerPublicKey(), returned[0], returned[1]);
@@ -123,12 +125,139 @@ public class ServerGetTest {
 						 token,
 						 Crypto.signData(private1, Crypto.concatenateBytes(d2,u2,token)));
 		
+		
 		assertEquals(Integer.valueOf(3), Integer.valueOf(new String(Crypto.decryptRSA(private1, Crypto.decodeBase64(returned[0])))));
 		assertTrue(Arrays.equals(p1, returned[3]));
     }
     
     @Test
-    public void getTestNoPassword(){
+    public void getTestNullPassword() throws Exception{
+    	String domain = "facebook";
+    	String username = "user1";
     	
+    	byte[][] returned = interfacermi.getChallenge(public1);
+    	
+    	byte[] t = Crypto.decryptRSA(private1, Crypto.decodeBase64(returned[0]));
+		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
+    	
+    	returned = interfacermi.getChallenge(public1);
+    	
+    	long currentTime = Time.getTimeLong();
+
+		byte[] d = Crypto.encodeBase64(
+				   Crypto.encrypt(secretKey, 
+				   Crypto.concatenateBytes(domain.getBytes(),Time.convertTime(currentTime))));
+		byte[] u = Crypto.encodeBase64(
+				   Crypto.encrypt(secretKey, 
+				   Crypto.concatenateBytes(username.getBytes(),Time.convertTime(currentTime+1))));
+		t = Crypto.decryptRSA(private1, 
+				              Crypto.decodeBase64(returned[0]));
+		
+		token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
+		returned = interfacermi.get(public1, 
+									d, 
+									u, 
+									token,
+									Crypto.signData(private1, Crypto.concatenateBytes(d,u,token)));
+		
+		assertEquals(Integer.valueOf(3), Integer.valueOf(new String(Crypto.decryptRSA(private1, Crypto.decodeBase64(returned[0])))));
+		assertNull(returned[3]);
+    }
+    
+    @Test
+    public void getTestOtherUserPassword() throws Exception{
+    	String domain = "facebook";
+    	String username = "user1";
+    	
+    	byte[][] returned = interfacermi.getChallenge(public1);
+    	
+    	byte[] t = Crypto.decryptRSA(private1, Crypto.decodeBase64(returned[0]));
+		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
+    	
+    	returned = interfacermi.getChallenge(public1);
+    	
+    	long currentTime = Time.getTimeLong();
+
+		byte[] d = Crypto.encodeBase64(
+				   Crypto.encrypt(secretKey, 
+				   Crypto.concatenateBytes(domain.getBytes(),Time.convertTime(currentTime))));
+		byte[] u = Crypto.encodeBase64(
+				   Crypto.encrypt(secretKey, 
+				   Crypto.concatenateBytes(username.getBytes(),Time.convertTime(currentTime+1))));
+		t = Crypto.decryptRSA(private1, 
+				              Crypto.decodeBase64(returned[0]));
+		
+		token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
+		returned = interfacermi.get(public2, 
+									d, 
+									u, 
+									token,
+									Crypto.signData(private1, Crypto.concatenateBytes(d,u,token)));
+		
+		// Check for the return code 1 (Invalid signature)
+		// The attacker can't actually see this message because it is ciphered with 
+		// the client's publickey.
+		assertEquals(Integer.valueOf(1), Integer.valueOf(new String(Crypto.decryptRSA(private2, Crypto.decodeBase64(returned[0])))));
+    }
+    
+    @Test
+    public void getTestRepeatedMessage() throws Exception{
+    	String domain = "facebook";
+    	String username = "user1";
+    	String password = "123123";
+    	
+    	long currentTime = Time.getTimeLong();
+
+    	// Add a password entry to the user
+  		byte[] d1 = Crypto.encodeBase64(
+  				    Crypto.encrypt(secretKey, 
+  					Crypto.concatenateBytes(domain.getBytes(),Time.convertTime(currentTime))));
+  		byte[] u1 = Crypto.encodeBase64(
+  				    Crypto.encrypt(secretKey, 
+  					Crypto.concatenateBytes(username.getBytes(),Time.convertTime(currentTime+1))));
+  		byte[] p1 = Crypto.encodeBase64(
+  				    Crypto.encrypt(secretKey, 
+  				    Crypto.concatenateBytes(password.getBytes(),"||".getBytes(),Time.convertTime(currentTime+2))));
+  		
+    	pm.getUser(public1).addPasswordEntry(new PasswordEntry(d1,u1,p1));
+    	
+    	// Call get method
+    	byte[][] returned = interfacermi.getChallenge(public1);
+    	
+    	boolean verified = Crypto.verifySignature(pm.getServerPublicKey(), returned[0], returned[1]);
+    	assertTrue(verified);
+    	
+    	byte[] t = Crypto.decryptRSA(private1, Crypto.decodeBase64(returned[0]));
+		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
+    	
+    	returned = interfacermi.getChallenge(public1);
+
+		byte[] d2 = Crypto.encodeBase64(
+				    Crypto.encrypt(secretKey, 
+				    Crypto.concatenateBytes(domain.getBytes(),Time.convertTime(currentTime))));
+		byte[] u2 = Crypto.encodeBase64(
+				    Crypto.encrypt(secretKey, 
+				    Crypto.concatenateBytes(username.getBytes(),Time.convertTime(currentTime+1))));
+		t = Crypto.decryptRSA(
+				   private1, 
+				   Crypto.decodeBase64(returned[0]));
+		
+		token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
+		interfacermi.get(public1, 
+						 d2, 
+						 u2, 
+						 token,
+						 Crypto.signData(private1, Crypto.concatenateBytes(d2,u2,token)));
+		
+		returned = interfacermi.get(public1, 
+									d2, 
+									u2, 
+									token,
+									Crypto.signData(private1, Crypto.concatenateBytes(d2,u2,token)));
+		
+		// After get was called two times, the return error the second time should
+		// indicate a replay attack, code 2.
+		assertEquals(Integer.valueOf(2), Integer.valueOf(new String(Crypto.decryptRSA(private1, Crypto.decodeBase64(returned[0])))));
+		assertNull(returned[3]);
     }
 }

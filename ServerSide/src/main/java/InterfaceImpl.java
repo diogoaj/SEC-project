@@ -61,6 +61,7 @@ public class InterfaceImpl implements InterfaceRMI{
 		if(user != null){
 			if(Crypto.verifySignature((PublicKey) publicKey, Crypto.concatenateBytes(domain,username,password,token), signedData)){
 				if(tokenToVerify == tokenMap.get(publicKey)){
+					tokenMap.put(publicKey, (long) 0);
 					manager.addPasswordEntry(user,domain,username,password);
 					return dataToSend(publicKey, 3, tokenToVerify+1, null);
 				}
@@ -86,6 +87,7 @@ public class InterfaceImpl implements InterfaceRMI{
 		if(user != null){
 			if(Crypto.verifySignature((PublicKey) publicKey, Crypto.concatenateBytes(domain,username,token), signedData)){
 				if(tokenToVerify == tokenMap.get(publicKey)){
+					tokenMap.put(publicKey, (long) 0);
 					return dataToSend(publicKey, 3, tokenToVerify+1, manager.getUserPassword(user,domain,username));
 				}
 				else{
@@ -109,10 +111,9 @@ public class InterfaceImpl implements InterfaceRMI{
 		byte[] tokenBytes = String.valueOf(token).getBytes();
 		tokenBytes = Crypto.encodeBase64(Crypto.encryptRSA((PublicKey) publicKey, tokenBytes));
 		byte[] signed = Crypto.signData(manager.getServerPrivateKey(), Crypto.concatenateBytes(valueBytes,tokenBytes));
-		if(password != null)
-			return Token.getByteList(valueBytes, tokenBytes, signed, password);
-		else
-			return Token.getByteList(valueBytes, tokenBytes, signed);
+
+		return Token.getByteList(valueBytes, tokenBytes, signed, password);
+
 	}
 	
 }

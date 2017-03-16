@@ -331,5 +331,56 @@ public class ServerPutTest {
     	assertEquals(Integer.valueOf(1), Integer.valueOf(new String(Crypto.decryptRSA(private2, Crypto.decodeBase64(returned[0])))));
     }
     
-    
+    @Test
+    public void putTestRepeatedMessage() throws Exception{
+    	String domain = "facebook";
+    	String username = "user1";
+    	String password = "123123";
+    	
+    	byte[][] returned = interfacermi.getChallenge(public1);
+    	
+    	boolean verified = Crypto.verifySignature(pm.getServerPublicKey(), returned[0], returned[1]);
+    	assertTrue(verified);
+    	
+    	byte[] t = Crypto.decryptRSA(private1, Crypto.decodeBase64(returned[0]));
+		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
+    	
+    	returned = interfacermi.getChallenge(public1);
+
+	    long currentTime = Time.getTimeLong();
+
+		byte[] d = Crypto.encodeBase64(
+				   Crypto.encrypt(secretKey, 
+						   Crypto.concatenateBytes(domain.getBytes(),Time.convertTime(currentTime))));
+		byte[] u = Crypto.encodeBase64(
+				   Crypto.encrypt(secretKey, 
+						   Crypto.concatenateBytes(username.getBytes(),Time.convertTime(currentTime+1))));
+		byte[] p = Crypto.encodeBase64(
+				   Crypto.encrypt(secretKey, 
+						   Crypto.concatenateBytes(password.getBytes(),"||".getBytes(),Time.convertTime(currentTime+2))));
+		t = Crypto.decryptRSA(
+				   private1, 
+				   Crypto.decodeBase64(returned[0]));
+		
+		
+		token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
+		interfacermi.put(public1, 
+						 d, 
+						 u, 
+						 p, 
+						 token,
+						 Crypto.signData(private1, Crypto.concatenateBytes(d,u,p,token)));
+		
+		returned = interfacermi.put(public1, 
+									d, 
+									u, 
+									p, 
+									token,
+									Crypto.signData(private1, Crypto.concatenateBytes(d,u,p,token)));
+		
+		// After put was called two times, the return error the second time should
+		// indicate a replay attack, code 2.
+		assertEquals(Integer.valueOf(2), Integer.valueOf(new String(Crypto.decryptRSA(private1, Crypto.decodeBase64(returned[0])))));
+		assertTrue(pm.getUser(public1).getData().size() == 1);
+    }
 }
