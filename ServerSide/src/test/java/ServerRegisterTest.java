@@ -90,7 +90,7 @@ public class ServerRegisterTest {
     	
 		// First register successfull, return code OK
     	byte[][] returned = interfacermi.register(publicKey, token, Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
-    	assertEquals(Integer.valueOf(2), Integer.valueOf(new String(Crypto.decryptRSA(privateKey, Crypto.decodeBase64(returned[0])))));
+    	assertEquals(Integer.valueOf(3), Integer.valueOf(new String(Crypto.decryptRSA(privateKey, Crypto.decodeBase64(returned[0])))));
     	
     	// Repeated register, check for the return code of the replay attack
     	returned = interfacermi.register(publicKey, token, Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));

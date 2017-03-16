@@ -48,7 +48,7 @@ public class SaveTest {
 	public void saveWithoutRegister() throws KeyStoreException{
 		API library2 = new API();
 		KeyStore ks2 = KeyStore.getInstance("JKS");
-		library2.init(ks2, "1", "banana");
+		library2.init(ks2, "2", "banana");
 		int value = library2.save_password("facebook2".getBytes(), "user2".getBytes(), "pass2".getBytes());
 		assertEquals(value, 0);
 	}
@@ -132,6 +132,51 @@ public class SaveTest {
 		
 		int value = library.getFeedback(returnValue, bytes, t);
 		assertEquals(value,1);
+	}
+	
+	@Test
+	public void saveWrongServerSignature() throws Exception {
+		
+		byte[][] bytes = stub.getChallenge(publicKey);
+
+		long currentTime;
+		String mapKey = new String("gmail") + "||" + new String("rito");
+		if(library.getMap().containsKey(mapKey)){
+			currentTime = library.getTimestampFromKey(mapKey);
+		}else{
+			currentTime = Time.getTimeLong();
+		}
+		
+		long l = rand.nextLong();
+		byte[] t = String.valueOf(l).getBytes();
+		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+		byte[] token_wrong = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(Token.nextToken(t))));
+		
+		byte[] d = Crypto.encodeBase64(
+				   Crypto.encrypt(secretKey, 
+						   Crypto.concatenateBytes("gmail".getBytes(),Time.convertTime(currentTime))));
+		byte[] u = Crypto.encodeBase64(
+				   Crypto.encrypt(secretKey, 
+						   Crypto.concatenateBytes("rito".getBytes(),Time.convertTime(currentTime+1))));
+		byte[] p = Crypto.encodeBase64(
+				   Crypto.encrypt(secretKey, 
+						   Crypto.concatenateBytes("cruz".getBytes(),"||".getBytes(),Time.convertTime(currentTime+2))));
+		byte[][] returnValue = stub.put(publicKey, 
+				 d, 
+				 u, 
+				 p, 
+				 token,
+				 Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,p,token_wrong)));
+
+		
+		long l2 = rand.nextLong();
+		byte[] t2 = String.valueOf(l2).getBytes();
+		byte[] token2 = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t2)));
+		
+		returnValue[1] = token2;
+		
+		int value = library.getFeedback(returnValue, bytes, t);
+		assertEquals(value,-1);
 	}
 
 }

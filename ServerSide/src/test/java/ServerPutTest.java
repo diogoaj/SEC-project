@@ -2,17 +2,14 @@ package test.java;
 
 import static org.junit.Assert.*;
 
-import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Arrays;
 
-import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import javax.swing.ToolTipManager;
 
 import org.junit.After;
 import org.junit.BeforeClass;

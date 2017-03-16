@@ -31,13 +31,14 @@ public class PasswordManager {
 		}
 	}
 	
-	public void addUser(User user){
+	public boolean addUser(User user){
 		if(users.containsKey(user.getKey())){
 			System.out.println("User already exists!");
-			return;
+			return false;
 		}
 		users.put((PublicKey) user.getKey(), user);
 		saveData();
+		return true;
 	}
 	
 	public User getUser(Key key){

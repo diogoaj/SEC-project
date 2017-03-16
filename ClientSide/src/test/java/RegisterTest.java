@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.rmi.RemoteException;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
@@ -37,9 +38,19 @@ public class RegisterTest {
 		serverKey = library.getServerPublicKey();
 		stub = library.getStub();
 	}
+
+	@Test
+	public void registerSuccess() throws KeyStoreException {
+		API library2 = new API();
+		KeyStore ks2 = KeyStore.getInstance("JKS");
+		library2.init(ks2, "1", "banana");
+		int value = library2.register_user();
+		assertEquals(3,value);
+	}
 	
 	@Test
-	public void registerSuccess() {
+	public void registerSecondTime() {
+		library.register_user();
 		int value = library.register_user();
 		assertEquals(value,2);
 	}

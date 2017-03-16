@@ -5,7 +5,6 @@ import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 import java.security.Key;
-import java.security.PrivateKey;
 import java.security.PublicKey;
 import main.java.business.PasswordManager;
 import main.java.business.User;
@@ -39,8 +38,11 @@ public class InterfaceImpl implements InterfaceRMI{
 			if(tokenToVerify == tokenMap.get(publicKey)){
 				tokenMap.put(publicKey, (long) 0);
 				User user = new User(publicKey);
-				manager.addUser(user);
-				return dataToSend(publicKey, 2, tokenToVerify+1, null);
+				boolean added = manager.addUser(user);
+				if(added)
+					return dataToSend(publicKey, 3, tokenToVerify+1, null);
+				else
+					return dataToSend(publicKey, 2, tokenToVerify+1, null);
 			}else{
 				System.out.println("Token not correct");
 				return dataToSend(publicKey, 1, tokenToVerify+1, null);
@@ -92,6 +94,7 @@ public class InterfaceImpl implements InterfaceRMI{
 				}
 			}
 			else{
+				System.out.println("Signature not correct!");
 				return dataToSend(publicKey, 1, tokenToVerify+1, null);
 			}
 		}else{
