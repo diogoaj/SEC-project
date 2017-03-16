@@ -92,6 +92,7 @@ public class RetrieveTest{
 	
 	@Test
 	public void retrieveWrongToken() throws Exception{
+		int value;
 		byte[][] bytes = stub.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
 		Long timestamp = library.getTimestampFromKey(new String("gmail") + "||" + new String("rito"));
 
@@ -111,13 +112,17 @@ public class RetrieveTest{
 				                   u, 
 				                   token,
 				                   Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,token)));
-		
-		int value = library.getFeedback(returnValue, bytes, t, true);
+		if(returnValue[3] == null){
+			value = library.getFeedback(returnValue, bytes, t, false);
+		}else{
+			value = library.getFeedback(returnValue, bytes, t, true);
+		}
 		assertEquals(value, 2);
 	}
 	
 	@Test
 	public void retrieveWrongSignature() throws Exception{
+		int value;
 		byte[][] bytes = stub.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
 		Long timestamp = library.getTimestampFromKey(new String("gmail") + "||" + new String("rito"));
 
@@ -138,13 +143,18 @@ public class RetrieveTest{
 				                   u, 
 				                   token,
 				                   Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,token_wrong)));
-		
-		int value = library.getFeedback(returnValue, bytes, t, true);
+		if(returnValue[3] == null){
+			value = library.getFeedback(returnValue, bytes, t, false);
+		}else{
+			value = library.getFeedback(returnValue, bytes, t, true);
+		}
+
 		assertEquals(value, 1);
 	}
 	
 	@Test
 	public void retrieveWrongServerSignature() throws Exception{
+		int value;
 		byte[][] bytes = stub.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
 		Long timestamp = library.getTimestampFromKey(new String("gmail") + "||" + new String("rito"));
 
@@ -172,7 +182,11 @@ public class RetrieveTest{
 		
 		returnValue[1] = token2;
 		
-		int value = library.getFeedback(returnValue, bytes, t, true);
+		if(returnValue[3] == null){
+			value = library.getFeedback(returnValue, bytes, t, false);
+		}else{
+			value = library.getFeedback(returnValue, bytes, t, true);
+		}
 		assertEquals(value, -1);
 	}
 	

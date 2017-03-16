@@ -6,13 +6,20 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,35 +43,30 @@ public class API {
 	
 	private Map<String, Long> timestampMap;
 	
-	public void init(KeyStore key, String id, String pass){
+	public void init(KeyStore key, String id, String pass)throws NoSuchAlgorithmException, CertificateException, IOException, NotBoundException, UnrecoverableKeyException, KeyStoreException, InvalidKeySpecException{
 		keyStore = key;
 		password = pass;
 		clientId = id;
+		
 		timestampMap = new HashMap<String, Long>();
-		try{
-			keyStore.load(new FileInputStream("src/main/resources/keystore_" + id +".jks"), password.toCharArray());
-			Registry registry = LocateRegistry.getRegistry(8000);
-	    	stub = (InterfaceRMI) registry.lookup("Interface");
-	    	
-	    	CertificateFactory f = CertificateFactory.getInstance("X.509");
-	    	X509Certificate certificate = (X509Certificate)f.generateCertificate(new FileInputStream("src/main/resources/server.cer"));
-	    	serverKey = certificate.getPublicKey();
-	    	
-	    	privateKey = (PrivateKey)keyStore.getKey("clientkeystore", password.toCharArray());
-	    	publicKey = keyStore.getCertificate("clientkeystore").getPublicKey();
-	    	
-	    	// Generate static secret key
-	    	SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-			KeySpec spec = new PBEKeySpec(new String(privateKey.getEncoded()).toCharArray(), salt_bytes, 1024, 128);
-			SecretKey tmp = factory.generateSecret(spec);
-			secretKey = new SecretKeySpec(tmp.getEncoded(), "AES"); 
-			
-			loadData();		
-		}
-		catch (Exception e) {
-        	System.err.println("Client exception: " + e.toString());
-        	e.printStackTrace();
-    	}
+		keyStore.load(new FileInputStream("src/main/resources/keystore_" + id +".jks"), password.toCharArray());
+		Registry registry = LocateRegistry.getRegistry(8000);
+    	stub = (InterfaceRMI) registry.lookup("Interface");
+    	
+    	CertificateFactory f = CertificateFactory.getInstance("X.509");
+    	X509Certificate certificate = (X509Certificate)f.generateCertificate(new FileInputStream("src/main/resources/server.cer"));
+    	serverKey = certificate.getPublicKey();
+    	
+    	privateKey = (PrivateKey)keyStore.getKey("clientkeystore", password.toCharArray());
+    	publicKey = keyStore.getCertificate("clientkeystore").getPublicKey();
+    	
+    	// Generate static secret key
+    	SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+		KeySpec spec = new PBEKeySpec(new String(privateKey.getEncoded()).toCharArray(), salt_bytes, 1024, 128);
+		SecretKey tmp = factory.generateSecret(spec);
+		secretKey = new SecretKeySpec(tmp.getEncoded(), "AES"); 
+		
+		loadData();
 	}
 	
 	public int register_user(){
