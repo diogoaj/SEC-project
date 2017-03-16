@@ -58,13 +58,13 @@ public class ServerGetTest {
     	secretKey = keyGenSecret.generateKey();
 		
     	// Register user1
-    	byte[][] received = interfacermi.getChallenge(public1);
+    	byte[][] received = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
     	byte[] t = Crypto.decryptRSA(private1, Crypto.decodeBase64(received[0]));
 		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
     	interfacermi.register(public1, token, Crypto.signData(private1, Crypto.concatenateBytes(public1.getEncoded(), token)));
     	
     	// Register user2
-    	received = interfacermi.getChallenge(public2);
+    	received = interfacermi.getChallenge(public2, Crypto.signData(private2, public2.getEncoded()));
     	t = Crypto.decryptRSA(private2, Crypto.decodeBase64(received[0]));
 		token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
     	interfacermi.register(public2, token, Crypto.signData(private2, Crypto.concatenateBytes(public2.getEncoded(), token)));
@@ -98,7 +98,7 @@ public class ServerGetTest {
     	pm.getUser(public1).addPasswordEntry(new PasswordEntry(d1,u1,p1));
     	
     	// Call get method
-    	byte[][] returned = interfacermi.getChallenge(public1);
+    	byte[][] returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
     	
     	boolean verified = Crypto.verifySignature(pm.getServerPublicKey(), returned[0], returned[1]);
     	assertTrue(verified);
@@ -106,7 +106,7 @@ public class ServerGetTest {
     	byte[] t = Crypto.decryptRSA(private1, Crypto.decodeBase64(returned[0]));
 		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
     	
-    	returned = interfacermi.getChallenge(public1);
+		returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
 
 		byte[] d2 = Crypto.encodeBase64(
 				    Crypto.encrypt(secretKey, 
@@ -135,12 +135,12 @@ public class ServerGetTest {
     	String domain = "facebook";
     	String username = "user1";
     	
-    	byte[][] returned = interfacermi.getChallenge(public1);
+    	byte[][] returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
     	
     	byte[] t = Crypto.decryptRSA(private1, Crypto.decodeBase64(returned[0]));
 		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
     	
-    	returned = interfacermi.getChallenge(public1);
+		returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
     	
     	long currentTime = Time.getTimeLong();
 
@@ -169,12 +169,12 @@ public class ServerGetTest {
     	String domain = "facebook";
     	String username = "user1";
     	
-    	byte[][] returned = interfacermi.getChallenge(public1);
+    	byte[][] returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
     	
     	byte[] t = Crypto.decryptRSA(private1, Crypto.decodeBase64(returned[0]));
 		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
     	
-    	returned = interfacermi.getChallenge(public1);
+		returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
     	
     	long currentTime = Time.getTimeLong();
 
@@ -222,7 +222,7 @@ public class ServerGetTest {
     	pm.getUser(public1).addPasswordEntry(new PasswordEntry(d1,u1,p1));
     	
     	// Call get method
-    	byte[][] returned = interfacermi.getChallenge(public1);
+    	byte[][] returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
     	
     	boolean verified = Crypto.verifySignature(pm.getServerPublicKey(), returned[0], returned[1]);
     	assertTrue(verified);
@@ -230,7 +230,7 @@ public class ServerGetTest {
     	byte[] t = Crypto.decryptRSA(private1, Crypto.decodeBase64(returned[0]));
 		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
     	
-    	returned = interfacermi.getChallenge(public1);
+		returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
 
 		byte[] d2 = Crypto.encodeBase64(
 				    Crypto.encrypt(secretKey, 

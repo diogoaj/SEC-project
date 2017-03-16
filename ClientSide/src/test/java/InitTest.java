@@ -3,6 +3,7 @@ package test.java;
 import static org.junit.Assert.*;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -45,7 +46,7 @@ public class InitTest{
     	assertEquals(privateKey, library.getPrivateKey());
 	}
 	
-	@Test
+	@Test(expected= FileNotFoundException.class)
 	public void InitTestFail() throws Exception {
 		API library = new API();
 		KeyStore ks = KeyStore.getInstance("JKS");

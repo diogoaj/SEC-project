@@ -2,11 +2,17 @@ package test.java;
 
 import static org.junit.Assert.*;
 
+import java.io.IOException;
+import java.rmi.NotBoundException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.security.spec.InvalidKeySpecException;
 
 import javax.crypto.SecretKey;
 
@@ -45,7 +51,7 @@ public class SaveTest {
 	}
 	
 	@Test
-	public void saveWithoutRegister() throws KeyStoreException{
+	public void saveWithoutRegister() throws KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException, CertificateException, InvalidKeySpecException, IOException, NotBoundException{
 		API library2 = new API();
 		KeyStore ks2 = KeyStore.getInstance("JKS");
 		library2.init(ks2, "2", "banana");

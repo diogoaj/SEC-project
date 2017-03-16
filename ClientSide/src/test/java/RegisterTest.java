@@ -2,12 +2,19 @@ package test.java;
 
 import static org.junit.Assert.*;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.security.spec.InvalidKeySpecException;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -40,7 +47,7 @@ public class RegisterTest {
 	}
 
 	@Test
-	public void registerSuccess() throws KeyStoreException {
+	public void registerSuccess() throws KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException, CertificateException, InvalidKeySpecException, IOException, NotBoundException {
 		API library2 = new API();
 		KeyStore ks2 = KeyStore.getInstance("JKS");
 		library2.init(ks2, "1", "banana");

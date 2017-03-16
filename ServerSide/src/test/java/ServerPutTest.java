@@ -58,13 +58,13 @@ public class ServerPutTest {
     	secretKey = keyGenSecret.generateKey();
 		
     	// Register user1
-    	byte[][] received = interfacermi.getChallenge(public1);
+    	byte[][] received = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
     	byte[] t = Crypto.decryptRSA(private1, Crypto.decodeBase64(received[0]));
 		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
     	interfacermi.register(public1, token, Crypto.signData(private1, Crypto.concatenateBytes(public1.getEncoded(), token)));
     	
     	// Register user2
-    	received = interfacermi.getChallenge(public2);
+    	received = interfacermi.getChallenge(public2, Crypto.signData(private2, public2.getEncoded()));
     	t = Crypto.decryptRSA(private2, Crypto.decodeBase64(received[0]));
 		token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
     	interfacermi.register(public2, token, Crypto.signData(private2, Crypto.concatenateBytes(public2.getEncoded(), token)));
@@ -83,7 +83,7 @@ public class ServerPutTest {
     	String username = "user1";
     	String password = "123123";
     	
-    	byte[][] returned = interfacermi.getChallenge(public1);
+    	byte[][] returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
     	
     	boolean verified = Crypto.verifySignature(pm.getServerPublicKey(), returned[0], returned[1]);
     	assertTrue(verified);
@@ -91,7 +91,7 @@ public class ServerPutTest {
     	byte[] t = Crypto.decryptRSA(private1, Crypto.decodeBase64(returned[0]));
 		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
     	
-    	returned = interfacermi.getChallenge(public1);
+		returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
 
 	    long currentTime = Time.getTimeLong();
 
@@ -132,14 +132,14 @@ public class ServerPutTest {
     	String username = "user1";
     	String password = "123123";
     	
-    	byte[][] returned = interfacermi.getChallenge(public1);
+    	byte[][] returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
     	
     	Crypto.verifySignature(pm.getServerPublicKey(), returned[0], returned[1]);
     	
     	byte[] t = Crypto.decryptRSA(private1, Crypto.decodeBase64(returned[0]));
 		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
     	
-    	returned = interfacermi.getChallenge(public1);
+		returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
 
 	    long currentTime = Time.getTimeLong();
 
@@ -165,14 +165,14 @@ public class ServerPutTest {
 						 token,
 						 Crypto.signData(private1, Crypto.concatenateBytes(d,u,p,token)));
 		
-        returned = interfacermi.getChallenge(public1);
+		returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
     	
     	Crypto.verifySignature(pm.getServerPublicKey(), returned[0], returned[1]);
     	
     	t = Crypto.decryptRSA(private1, Crypto.decodeBase64(returned[0]));
 		token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
     	
-    	returned = interfacermi.getChallenge(public1);
+		returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
 
 		d = Crypto.encodeBase64(
 				   Crypto.encrypt(secretKey, 
@@ -206,14 +206,14 @@ public class ServerPutTest {
     	String username = "user1";
     	String password = "123123";
     	
-    	byte[][] returned = interfacermi.getChallenge(public3);
+    	byte[][] returned = interfacermi.getChallenge(public3, Crypto.signData(private3, public3.getEncoded()));
     	
     	Crypto.verifySignature(pm.getServerPublicKey(), returned[0], returned[1]);
     	
     	byte[] t = Crypto.decryptRSA(private3, Crypto.decodeBase64(returned[0]));
 		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
     	
-    	returned = interfacermi.getChallenge(public3);
+		returned = interfacermi.getChallenge(public3, Crypto.signData(private3, public3.getEncoded()));
 
 	    long currentTime = Time.getTimeLong();
 
@@ -239,7 +239,7 @@ public class ServerPutTest {
 						 token,
 						 Crypto.signData(private3, Crypto.concatenateBytes(d,u,p,token)));
 		
-        returned = interfacermi.getChallenge(public3);
+		returned = interfacermi.getChallenge(public3, Crypto.signData(private3, public3.getEncoded()));
     	
     	Crypto.verifySignature(pm.getServerPublicKey(), returned[0], returned[1]);
     	
@@ -294,12 +294,12 @@ public class ServerPutTest {
     	String username = "user1";
     	String password = "123123";
     	
-    	byte[][] returned = interfacermi.getChallenge(public1);
+    	byte[][] returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
     	
     	byte[] t = Crypto.decryptRSA(private1, Crypto.decodeBase64(returned[0]));
 		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
     	
-    	returned = interfacermi.getChallenge(public1);
+		returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
 
 	    long currentTime = Time.getTimeLong();
 
@@ -337,7 +337,7 @@ public class ServerPutTest {
     	String username = "user1";
     	String password = "123123";
     	
-    	byte[][] returned = interfacermi.getChallenge(public1);
+    	byte[][] returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
     	
     	boolean verified = Crypto.verifySignature(pm.getServerPublicKey(), returned[0], returned[1]);
     	assertTrue(verified);
@@ -345,7 +345,7 @@ public class ServerPutTest {
     	byte[] t = Crypto.decryptRSA(private1, Crypto.decodeBase64(returned[0]));
 		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
     	
-    	returned = interfacermi.getChallenge(public1);
+		returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
 
 	    long currentTime = Time.getTimeLong();
 
@@ -381,6 +381,7 @@ public class ServerPutTest {
 		// After put was called two times, the return error the second time should
 		// indicate a replay attack, code 2.
 		assertEquals(Integer.valueOf(2), Integer.valueOf(new String(Crypto.decryptRSA(private1, Crypto.decodeBase64(returned[0])))));
-		assertTrue(pm.getUser(public1).getData().size() == 1);
+		assertTrue(pm.getUser(public1).getData().size() == 1);			
+		
     }
 }

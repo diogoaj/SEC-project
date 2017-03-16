@@ -111,8 +111,9 @@ public class RetrieveTest{
 				                   u, 
 				                   token,
 				                   Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,token)));
-		
+	
 		int value = library.getFeedback(returnValue, bytes, t);
+
 		assertEquals(value, 2);
 	}
 	
@@ -171,8 +172,9 @@ public class RetrieveTest{
 		byte[] token2 = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t2)));
 		
 		returnValue[1] = token2;
-		
+
 		int value = library.getFeedback(returnValue, bytes, t);
+
 		assertEquals(value, -1);
 	}
 	
