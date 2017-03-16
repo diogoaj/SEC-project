@@ -3,11 +3,13 @@ package test.java;
 import static org.junit.Assert.*;
 
 import java.security.KeyStore;
+import java.util.Arrays;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import main.java.API;
+import main.java.Crypto;
 
 public class SimpleClientTest{
 	private static API library;
@@ -25,22 +27,30 @@ public class SimpleClientTest{
 		library.register_user();
 		library.save_password("facebook".getBytes(), "user1".getBytes(), "pass1".getBytes());
 		byte[] pw = library.retrieve_password("facebook".getBytes(), "user1".getBytes());
-		
-		assertEquals(pw, "pass1".getBytes());
-	}
-	/*
-	@Test(expected = Exception.class)
-	public void SimpleClientWrong1Test() throws Exception{
-		library.register_user();
-		library.save_password("facebook".getBytes(), "Fernando".getBytes(), "Pessoa".getBytes());
-		byte[] pw = library.retrieve_password("tecnico".getBytes(), "Fernando".getBytes());
+
+		String pass = new String(pw);
+		pass = pass.split("\\|\\|")[0];
+		assertEquals(pass, "pass1");
 	}
 	
-	@Test(expected = Exception.class)
-	public void SimpleClientWrong2Test() throws Exception{
+	@Test
+	public void SimpleClientWrongRetrieve1() throws Exception{
 		library.register_user();
-		library.save_password("facebook".getBytes(), "Fernando".getBytes(), "Pessoa".getBytes());
-		byte[] pw = library.retrieve_password("facebook".getBytes(), "Alberto".getBytes());
+		byte[] pw = library.retrieve_password("tecnico".getBytes(), "Fernando".getBytes());
+		assertNull(pw);
 	}
-	*/
+	
+	@Test
+	public void SimpleClientWrongRetrieve2() throws Exception{
+		library.register_user();
+		byte[] pw = library.retrieve_password("facebook".getBytes(), "Alberto".getBytes());
+		assertNull(pw);
+	}
+	
+	@Test
+	public void savePasswordSuccess(){
+		library.register_user();
+		int value = library.save_password("facebook".getBytes(), "user1".getBytes(), "pass1".getBytes());
+		assertEquals(value, 3);
+	}
 }

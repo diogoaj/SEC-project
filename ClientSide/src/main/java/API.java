@@ -216,6 +216,10 @@ public class API {
 		return privateKey;
 	}
 	
+	public SecretKey getSecretKey(){
+		return secretKey;
+	}
+		
 	@SuppressWarnings("unchecked")
 	public void loadData(){
 		try{
