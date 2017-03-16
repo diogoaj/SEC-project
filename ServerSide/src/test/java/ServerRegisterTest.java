@@ -88,17 +88,20 @@ public class ServerRegisterTest {
     	byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(received[0]));
 		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
     	
-    	byte[][] code = interfacermi.register(publicKey, token, Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
-    	assertEquals(Integer.valueOf(2), Integer.valueOf(new String(Crypto.decryptRSA(privateKey, Crypto.decodeBase64(code[0])))));
-    	// Replay attack should not be possible
-    	code = interfacermi.register(publicKey, token, Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
-    	assertEquals(Integer.valueOf(1), Integer.valueOf(new String(Crypto.decryptRSA(privateKey, Crypto.decodeBase64(code[0])))));
+		// First register successfull, return code OK
+    	byte[][] returned = interfacermi.register(publicKey, token, Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
+    	assertEquals(Integer.valueOf(2), Integer.valueOf(new String(Crypto.decryptRSA(privateKey, Crypto.decodeBase64(returned[0])))));
+    	
+    	// Repeated register, check for the return code of the replay attack
+    	returned = interfacermi.register(publicKey, token, Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
+    	assertEquals(Integer.valueOf(1), Integer.valueOf(new String(Crypto.decryptRSA(privateKey, Crypto.decodeBase64(returned[0])))));
     }
     
     @Test 
     public void registerOtherUserFail() throws Exception{
     	KeyPair kp = keyGen.generateKeyPair();
     	PublicKey publicKey = kp.getPublic();
+    	PrivateKey privateKey = kp.getPrivate();
     	
     	kp = keyGen.generateKeyPair();
     	PublicKey publicKeyAttacker = kp.getPublic();
@@ -112,9 +115,36 @@ public class ServerRegisterTest {
     	byte[] t = Crypto.decryptRSA(privateKeyAttacker, Crypto.decodeBase64(received[0]));
 		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
     	
-    	interfacermi.register(publicKey, token, Crypto.signData(privateKeyAttacker, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
+        byte[][] returned = interfacermi.register(publicKey, token, Crypto.signData(privateKeyAttacker, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
     	
     	assertTrue(pm.getUsers().size() == 0);
+    	// Check for the return code 0 (Invalid signature)
+    	assertEquals(Integer.valueOf(0), Integer.valueOf(new String(Crypto.decryptRSA(privateKey, Crypto.decodeBase64(returned[0])))));
+    }
+    
+    @Test
+    public void registerUserTampered() throws Exception{
+    	KeyPair kp = keyGen.generateKeyPair();
+    	PublicKey publicKey = kp.getPublic();
+    	PrivateKey privateKey = kp.getPrivate();
+    	
+    	kp = keyGen.generateKeyPair();
+    	PublicKey publicKeyAttacker = kp.getPublic();
+    	
+    	
+    	byte[][] received = interfacermi.getChallenge(publicKey);
+    	
+    	boolean verified = Crypto.verifySignature(pm.getServerPublicKey(), received[0], received[1]);
+    	assertTrue(verified);
+    	
+    	byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(received[0]));
+		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
+    	
+        byte[][] returned = interfacermi.register(publicKey, token, Crypto.signData(privateKey, Crypto.concatenateBytes(publicKeyAttacker.getEncoded(), token)));
+        
+        assertTrue(pm.getUsers().size() == 0);
+    	// Check for the return code 0 (Invalid signature)
+    	assertEquals(Integer.valueOf(0), Integer.valueOf(new String(Crypto.decryptRSA(privateKey, Crypto.decodeBase64(returned[0])))));
     }
 
 }

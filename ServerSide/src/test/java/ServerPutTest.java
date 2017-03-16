@@ -56,7 +56,6 @@ public class ServerPutTest {
     	pm.getUsers().get(1).getData().clear();
     }
     
-    /*
     @Test
     public void putSuccess() throws Exception{
     	User user1 = pm.getUsers().get(0);
@@ -64,7 +63,7 @@ public class ServerPutTest {
     	String username = "user1";
     	String password = "123123";
     	
-    	byte[][] received = interfacermi.getChallenge(user1.getKey());
+    	byte[][] returned = interfacermi.getChallenge(user1.getKey());
     	
     	interfacermi.put(user1.getKey(), domain.getBytes(), username.getBytes(), password.getBytes(), null, null);
     	
@@ -75,6 +74,7 @@ public class ServerPutTest {
     	assertTrue(new String(user1.getData().get(0).getPassword()).equals(password));
     }
     
+    /*
     @Test
     public void putTestSuccess2() throws Exception{
     	User user1 = pm.getUsers().get(0);

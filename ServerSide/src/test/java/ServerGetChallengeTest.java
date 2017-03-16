@@ -1,6 +1,6 @@
 package test.java;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -42,5 +42,17 @@ public class ServerGetChallengeTest {
     	byte[][] token = interfacermi.getChallenge(publicKey);
     	
     	assertTrue(Crypto.verifySignature(pm.getServerPublicKey(), token[0], token[1]));
+    }
+    
+    @Test
+    public void getChallengeTampered() throws Exception{
+    	KeyPair kp = keyGen.generateKeyPair();
+    	PublicKey publicKey = kp.getPublic();
+
+    	byte[][] token = interfacermi.getChallenge(publicKey);
+    	
+    	byte[] tamperedToken = String.valueOf(10001110).getBytes();
+    	
+    	assertFalse(Crypto.verifySignature(pm.getServerPublicKey(), tamperedToken, token[1]));
     }
 }
