@@ -1,6 +1,6 @@
 package test.java;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -88,9 +88,11 @@ public class ServerRegisterTest {
     	byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(received[0]));
 		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
     	
-    	interfacermi.register(publicKey, token, Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
+    	byte[][] code = interfacermi.register(publicKey, token, Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
+    	assertEquals(Integer.valueOf(2), Integer.valueOf(new String(Crypto.decryptRSA(privateKey, Crypto.decodeBase64(code[0])))));
     	// Replay attack should not be possible
-    	interfacermi.register(publicKey, token, Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
+    	code = interfacermi.register(publicKey, token, Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
+    	assertEquals(Integer.valueOf(1), Integer.valueOf(new String(Crypto.decryptRSA(privateKey, Crypto.decodeBase64(code[0])))));
     }
     
     @Test 
