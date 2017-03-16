@@ -219,6 +219,10 @@ public class API {
 	public SecretKey getSecretKey(){
 		return secretKey;
 	}
+	
+	public InterfaceRMI getStub(){
+		return stub;
+	}
 		
 	@SuppressWarnings("unchecked")
 	public void loadData(){
@@ -258,7 +262,11 @@ public class API {
 		return timestampMap.get(key);
 	}
 	
-	private int getFeedback(byte[][] returnValue, byte[][] bytes, byte[] t){
+	public Map<String, Long> getMap(){
+		return timestampMap;
+	}
+	
+	public int getFeedback(byte[][] returnValue, byte[][] bytes, byte[] t){
 		if(Crypto.verifySignature(serverKey, Crypto.concatenateBytes(returnValue[0], returnValue[1]), returnValue[2])){
 			long returnToken = Long.valueOf(new String(Crypto.decryptRSA(privateKey, Crypto.decodeBase64(returnValue[1]))));
 			long lastToken = Long.valueOf(new String(t)) + 1;

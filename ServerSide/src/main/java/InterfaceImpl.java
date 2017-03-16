@@ -75,7 +75,6 @@ public class InterfaceImpl implements InterfaceRMI{
 			System.out.println("User does not exist!");
 			return dataToSend(publicKey, 0, tokenToVerify+1, null);
 		}
-		
 	}
 
 	public byte[][] get(Key publicKey, byte[] domain, byte[] username, byte[] token, byte[] signedData) throws RemoteException {

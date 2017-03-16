@@ -11,7 +11,7 @@ import org.junit.Test;
 import main.java.API;
 import main.java.Crypto;
 
-public class SimpleClientTest{
+public class RetrieveTest{
 	private static API library;
 	private static KeyStore ks;
 	
@@ -47,10 +47,5 @@ public class SimpleClientTest{
 		assertNull(pw);
 	}
 	
-	@Test
-	public void savePasswordSuccess(){
-		library.register_user();
-		int value = library.save_password("facebook".getBytes(), "user1".getBytes(), "pass1".getBytes());
-		assertEquals(value, 3);
-	}
+
 }

@@ -44,4 +44,16 @@ public class InitTest{
     	assertEquals(publicKey, library.getPublicKey());
     	assertEquals(privateKey, library.getPrivateKey());
 	}
+	
+	@Test
+	public void InitTestFail() throws Exception {
+		API library = new API();
+		KeyStore ks = KeyStore.getInstance("JKS");
+    	library.init(ks, "99999", "banana");
+    	   
+    	assertNull(library.getServerPublicKey());
+    	assertNull(library.getPublicKey());
+    	assertNull(library.getPrivateKey());
+	}
+
 }
