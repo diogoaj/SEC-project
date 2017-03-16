@@ -1,5 +1,5 @@
 # SEC-project
-Repository for the SEC project course
+Instructions
 
 ## To compile the project [With Maven]:
 ```
