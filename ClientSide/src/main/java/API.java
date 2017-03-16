@@ -56,7 +56,7 @@ public class API {
 	    	
 	    	// Generate static secret key
 	    	SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-			KeySpec spec = new PBEKeySpec(password.toCharArray(), salt_bytes, 1024, 128);
+			KeySpec spec = new PBEKeySpec(new String(privateKey.getEncoded()).toCharArray(), salt_bytes, 1024, 128);
 			SecretKey tmp = factory.generateSecret(spec);
 			secretKey = new SecretKeySpec(tmp.getEncoded(), "AES"); 
 			

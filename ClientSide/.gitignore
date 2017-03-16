@@ -54,3 +54,6 @@ local.properties
 .scala_dependencies
 .worksheet
 /target/
+
+# timestamps
+*.ser

@@ -31,7 +31,7 @@ public class PasswordManager {
 		}
 	}
 	
-	public boolean addUser(User user){
+	public boolean addUser(User user) {
 		if(users.containsKey(user.getKey())){
 			System.out.println("User already exists!");
 			return false;
