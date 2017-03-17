@@ -4,7 +4,7 @@ Instructions
 ## To compile the project [With Maven]:
 ```
 Compile in the main folder SEC-project/
-mvn install compile
+mvn clean install compile -DskipTests
 ```
 ## Without Maven [Recommended] 
 ### To run Server:
