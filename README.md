@@ -1,5 +1,11 @@
 # SEC-project
-Instructions
+Instructions:
+
+Note: To run the tests again it is required to always delete the .ser files in the respective folders:
+- ServerSide/src/main/resources/
+- ClientSide/src/main/resources/
+
+And run the ServerSide again
 
 ## To compile the project [With Maven]:
 ```
