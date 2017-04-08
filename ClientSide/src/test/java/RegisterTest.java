@@ -1,8 +1,8 @@
+/*
 package test.java;
 
 import static org.junit.Assert.*;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -25,6 +25,7 @@ import main.java.InterfaceRMI;
 import main.java.Token;
 
 public class RegisterTest {
+
 
 	private static API library;
 	private static KeyStore ks;
@@ -112,3 +113,4 @@ public class RegisterTest {
 	}
 
 }
+*/

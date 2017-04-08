@@ -12,12 +12,11 @@ public class PasswordServer{
 		try{
 			InterfaceImpl i = new InterfaceImpl(new PasswordManager());
 			InterfaceRMI stub = (InterfaceRMI) UnicastRemoteObject.exportObject(i, 0);
-			Registry registry = LocateRegistry.createRegistry(8000);
-			registry.rebind("Interface", stub);
-			System.out.println("Server is ready at port 8000");
+			Registry registry = LocateRegistry.createRegistry(8000 + Integer.parseInt(args[0]));
+			registry.rebind("Interface"+Integer.parseInt(args[0]), stub);
+			System.out.println("Server is ready at port 800" + args[0]);
 			
 			i.getManager().loadData();
-			//while(true);
 			
 		} catch(Exception e){
 			e.printStackTrace();

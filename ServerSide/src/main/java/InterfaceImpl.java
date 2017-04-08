@@ -2,8 +2,8 @@ package main.java;
 
 import java.rmi.RemoteException;
 import java.security.SecureRandom;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.security.Key;
 import java.security.PublicKey;
 import main.java.business.PasswordManager;
@@ -14,7 +14,7 @@ public class InterfaceImpl implements InterfaceRMI{
 	
 	private PasswordManager manager;
 	private SecureRandom rand = new SecureRandom();
-	private Map<Key, Long> tokenMap = new HashMap<Key, Long>();
+	private Map<Key, Long> tokenMap = new ConcurrentHashMap<Key, Long>();
 	
 	public InterfaceImpl(PasswordManager manager) throws Exception{
 		this.manager = manager;

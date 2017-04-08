@@ -21,7 +21,9 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.crypto.SecretKey;
@@ -30,28 +32,34 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 public class API {
-
+	
+	private static final int MAX_SERVERS = 4;
+	
 	private KeyStore keyStore;
 	private String clientId;
 	private String password;
-	private InterfaceRMI stub;
 	private PublicKey serverKey;
 	private PublicKey publicKey;
 	private PrivateKey privateKey;
 	private SecretKey secretKey;
 	private byte[] salt_bytes = "salty".getBytes();
-	
 	private Map<String, Long> timestampMap;
+	private List<InterfaceRMI> servers;
 	
 	public void init(KeyStore key, String id, String pass)throws NoSuchAlgorithmException, CertificateException, IOException, NotBoundException, UnrecoverableKeyException, KeyStoreException, InvalidKeySpecException{
 		keyStore = key;
 		password = pass;
 		clientId = id;
 		
+		servers = new ArrayList<InterfaceRMI>();
+		
 		timestampMap = new HashMap<String, Long>();
 		keyStore.load(new FileInputStream("src/main/resources/keystore_" + id +".jks"), password.toCharArray());
-		Registry registry = LocateRegistry.getRegistry(8000);
-    	stub = (InterfaceRMI) registry.lookup("Interface");
+		for(int i = 0; i < MAX_SERVERS; i++){
+			Registry registry = LocateRegistry.getRegistry(8000 + i);
+	    	InterfaceRMI stub = (InterfaceRMI) registry.lookup("Interface"+i);
+	    	servers.add(stub);
+		}
     	
     	CertificateFactory f = CertificateFactory.getInstance("X.509");
     	X509Certificate certificate = (X509Certificate)f.generateCertificate(new FileInputStream("src/main/resources/server.cer"));
@@ -70,142 +78,125 @@ public class API {
 	}
 	
 	public int register_user(){
-		try{
-			byte[][] bytes = stub.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
-			if(bytes != null){
-				if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
-					byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(bytes[0]));
-					byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
-					byte[][] returnValue = stub.register(publicKey,
-							      token,
-						          Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
-					
-					return getFeedback(returnValue, bytes, t);
-				}
-				else{
-					System.out.println("Server signature not correct!");
-					return -1;
-				}
+		ArrayList<Integer> responses = new ArrayList<Integer>();
+		for (InterfaceRMI server : servers){
+			try{
+				byte[][] bytes = server.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
+				if(bytes != null){
+					if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
+						byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(bytes[0]));
+						byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+						byte[][] returnValue = server.register(publicKey,
+								      token,
+							          Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
+						
+						responses.add(getFeedback(returnValue,bytes,t));
+					}
+				}		
 			}
-			else{
-				System.out.println("Server failed to check signature");
-				return -1;
+			catch(Exception e){
+				System.err.println("Register user exception: " + e.toString());
+	        	e.printStackTrace();
+	        	return -1;
 			}
-			
 		}
-		catch(Exception e){
-			System.err.println("Register user exception: " + e.toString());
-        	e.printStackTrace();
-        	return -1;
-		}
+		
+		// TODO QUORUM
+		return responses.get(0);
 	}
 	
 	public int save_password(byte[] domain, byte[] username, byte[] password){
-		try{
-			long currentTime;
-			byte[][] bytes = stub.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
-			
-			if(bytes != null){
-				if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
-					String mapKey = new String(domain) + "||" + new String(username);
-					if(timestampMap.containsKey(mapKey)){
-						currentTime = getTimestampFromKey(mapKey);
-					}else{
-						currentTime = Time.getTimeLong();
+		ArrayList<Integer> responses = new ArrayList<Integer>();
+		for (InterfaceRMI server : servers){
+			try{
+				long currentTime;
+				byte[][] bytes = server.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
+				
+				if(bytes != null){
+					if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
+						String mapKey = new String(domain) + "||" + new String(username);
+						if(timestampMap.containsKey(mapKey)){
+							currentTime = getTimestampFromKey(mapKey);
+						}else{
+							currentTime = Time.getTimeLong();
+						}
+						byte[] d = Crypto.encodeBase64(
+								   Crypto.encrypt(secretKey, 
+										   Crypto.concatenateBytes(domain,Time.convertTime(currentTime))));
+						byte[] u = Crypto.encodeBase64(
+								   Crypto.encrypt(secretKey, 
+										   Crypto.concatenateBytes(username,Time.convertTime(currentTime+1))));
+						byte[] p = Crypto.encodeBase64(
+								   Crypto.encrypt(secretKey, 
+										   Crypto.concatenateBytes(password,"||".getBytes(),Time.convertTime(currentTime+2))));
+						byte[] t = Crypto.decryptRSA(
+								   privateKey, 
+								   Crypto.decodeBase64(bytes[0]));
+						
+						saveTimestampData(new String(domain) + "||" + new String(username), currentTime);
+						
+						byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+						byte[][] returnValue = server.put(publicKey, 
+								 d, 
+								 u, 
+								 p, 
+								 token,
+								 Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,p,token)));
+						
+						responses.add(getFeedback(returnValue, bytes, t));
 					}
-					byte[] d = Crypto.encodeBase64(
-							   Crypto.encrypt(secretKey, 
-									   Crypto.concatenateBytes(domain,Time.convertTime(currentTime))));
-					byte[] u = Crypto.encodeBase64(
-							   Crypto.encrypt(secretKey, 
-									   Crypto.concatenateBytes(username,Time.convertTime(currentTime+1))));
-					byte[] p = Crypto.encodeBase64(
-							   Crypto.encrypt(secretKey, 
-									   Crypto.concatenateBytes(password,"||".getBytes(),Time.convertTime(currentTime+2))));
-					byte[] t = Crypto.decryptRSA(
-							   privateKey, 
-							   Crypto.decodeBase64(bytes[0]));
-					
-					saveTimestampData(new String(domain) + "||" + new String(username), currentTime);
-					
-					byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
-					byte[][] returnValue = stub.put(publicKey, 
-							 d, 
-							 u, 
-							 p, 
-							 token,
-							 Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,p,token)));
-					
-					return getFeedback(returnValue, bytes, t);
-				}
-				else{
-					System.out.println("Signature not correct!");
-					return -1;
 				}
 			}
-			else{
-				System.out.println("Server failed to check signature");
-				return -1;
+			catch(Exception e){
+				System.err.println("Save password exception: " + e.toString());
+	        	e.printStackTrace();
+	        	return -1;
 			}
 		}
-		catch(Exception e){
-			System.err.println("Save password exception: " + e.toString());
-        	e.printStackTrace();
-        	return -1;
-		}
+		return responses.get(0);
 	}
 	
 	public byte[] retrieve_password(byte[] domain, byte[] username){
-		try{
-			byte[][] bytes = stub.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
-			if(bytes != null){
-				if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
-				Long timestamp = getTimestampFromKey(new String(domain) + "||" + new String(username));
-				if(timestamp == null){
-					return null;
-				}
-				byte[] d = Crypto.encodeBase64(
-						   Crypto.encrypt(secretKey, 
-								   Crypto.concatenateBytes(domain,Time.convertTime(timestamp))));
-				byte[] u = Crypto.encodeBase64(
-						   Crypto.encrypt(secretKey, 
-								   Crypto.concatenateBytes(username,Time.convertTime(timestamp+1))));
-				byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(bytes[0]));
-				byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
-				byte[][] returnValue = stub.get(publicKey, 
-						                   d, 
-						                   u, 
-						                   token,
-						                   Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,token)));
-				
-				int value = getFeedback(returnValue, bytes, t);
-				if(value == 3){
-					byte[] password = returnValue[3];
-					if(password != null){
-						return Crypto.decrypt(secretKey, Crypto.decodeBase64(password));
-					}
-					else{
+		ArrayList<byte[]> responses = new ArrayList<byte[]>();
+		for (InterfaceRMI server : servers){
+			try{
+				byte[][] bytes = server.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
+				if(bytes != null){
+					if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
+					Long timestamp = getTimestampFromKey(new String(domain) + "||" + new String(username));
+					if(timestamp == null){
 						return null;
 					}
+					byte[] d = Crypto.encodeBase64(
+							   Crypto.encrypt(secretKey, 
+									   Crypto.concatenateBytes(domain,Time.convertTime(timestamp))));
+					byte[] u = Crypto.encodeBase64(
+							   Crypto.encrypt(secretKey, 
+									   Crypto.concatenateBytes(username,Time.convertTime(timestamp+1))));
+					byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(bytes[0]));
+					byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+					byte[][] returnValue = server.get(publicKey, 
+							                   d, 
+							                   u, 
+							                   token,
+							                   Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,token)));
+					
+					int value = getFeedback(returnValue, bytes, t);
+					if(value == 3){
+						byte[] password = returnValue[3];
+						if(password != null){
+							responses.add(Crypto.decrypt(secretKey, Crypto.decodeBase64(password)));
+						}
+					}
 				}
-				else{
-					return null;
-				}
 			}
-			else{
-				System.out.println("Server failed to check signature");
-				return null;
-			}
-			}
-			else{
-				System.out.println("Signature incorrect!");
-			}
-		}
-		catch(Exception e){
+		}catch(Exception e){
 			System.err.println("Retrieve password exception: " + e.toString());
         	e.printStackTrace();
+        	}
 		}
-		return null;
+		return responses.get(0);
+				
 	}
 
 	public void close(){
@@ -228,9 +219,11 @@ public class API {
 		return secretKey;
 	}
 	
+	/*
 	public InterfaceRMI getStub(){
 		return stub;
 	}
+	*/
 		
 	@SuppressWarnings("unchecked")
 	public void loadData(){

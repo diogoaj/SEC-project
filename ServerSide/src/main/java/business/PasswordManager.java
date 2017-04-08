@@ -31,7 +31,7 @@ public class PasswordManager {
 		}
 	}
 	
-	public boolean addUser(User user) {
+	public synchronized boolean addUser(User user) {
 		if(users.containsKey(user.getKey())){
 			System.out.println("User already exists!");
 			return false;
@@ -41,16 +41,16 @@ public class PasswordManager {
 		return true;
 	}
 	
-	public User getUser(Key key){
+	public synchronized User getUser(Key key){
 		return users.get(key);
 	}
 	
-	public void addPasswordEntry(User user, byte[] d, byte[] u, byte[] password) {
+	public synchronized void addPasswordEntry(User user, byte[] d, byte[] u, byte[] password) {
 		user.addPasswordEntry(new PasswordEntry(d, u, password));
 		saveData();
 	}
 	
-	public byte[] getUserPassword(User user, byte[] domain, byte[] username) {
+	public synchronized byte[] getUserPassword(User user, byte[] domain, byte[] username) {
 		return user.getPassword(domain, username);
 	}
 	
@@ -67,7 +67,7 @@ public class PasswordManager {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void loadData(){
+	public synchronized void loadData(){
 		try{
 			FileInputStream fileIn = new FileInputStream("src/main/resources/userData.ser");
 			ObjectInputStream in = new ObjectInputStream(fileIn);
@@ -83,7 +83,7 @@ public class PasswordManager {
 		}
 	}
 	
-	public void saveData(){
+	public synchronized void saveData(){
 		try{
 			FileOutputStream fileOut = new FileOutputStream("src/main/resources/userData.ser");
 			ObjectOutputStream out = new ObjectOutputStream(fileOut);
