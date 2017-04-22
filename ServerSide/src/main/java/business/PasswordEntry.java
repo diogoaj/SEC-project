@@ -9,11 +9,13 @@ public class PasswordEntry implements Serializable{
 	private byte[] domain;
 	private byte[] username;
 	private byte[] password;
+	private byte[] wts;
 	
-	public PasswordEntry(byte[] domain, byte[] username, byte[] password){
+	public PasswordEntry(byte[] domain, byte[] username, byte[] password, byte[] wts){
 		this.domain = domain;
 		this.username = username;
 		this.password = password;
+		this.wts = wts;
 	}
 	
 	public byte[] getDomain(){
@@ -26,6 +28,14 @@ public class PasswordEntry implements Serializable{
 	
 	public byte[] getPassword(){
 		return password;
+	}
+	
+	public byte[] getWts(){
+		return wts;
+	}
+	
+	public void setWts(byte[] wts){
+		this.wts = wts;
 	}
 	
 	public void setPassword(byte[] password){

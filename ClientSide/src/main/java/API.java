@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.security.KeyStore;
@@ -22,6 +21,7 @@ import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +45,14 @@ public class API {
 	private byte[] salt_bytes = "salty".getBytes();
 	private Map<String, Long> timestampMap;
 	private List<InterfaceRMI> servers;
+	
+	// Algorithm
+	private int wts = 0;
+	private ArrayList<Integer> ackList = new ArrayList<Integer>();
+	private ArrayList<byte[][]> readList = new ArrayList<byte[][]>();
+	
+	private HashMap<byte[], byte[]> signatures = new HashMap<byte[], byte[]>();
+	
 	
 	public void init(KeyStore key, String id, String pass)throws NoSuchAlgorithmException, CertificateException, IOException, NotBoundException, UnrecoverableKeyException, KeyStoreException, InvalidKeySpecException{
 		keyStore = key;
@@ -73,8 +81,6 @@ public class API {
 		KeySpec spec = new PBEKeySpec(new String(privateKey.getEncoded()).toCharArray(), salt_bytes, 1024, 128);
 		SecretKey tmp = factory.generateSecret(spec);
 		secretKey = new SecretKeySpec(tmp.getEncoded(), "AES"); 
-		
-		loadData();
 	}
 	
 	public int register_user(){
@@ -101,16 +107,14 @@ public class API {
 			}
 		}
 		
-		// TODO QUORUM
 		return responses.get(0);
 	}
 	
 	public int save_password(byte[] domain, byte[] username, byte[] password){
-		ArrayList<Integer> responses = new ArrayList<Integer>();
-		for (InterfaceRMI server : servers){
+		for (int i = 0; i < servers.size(); i++){
 			try{
 				long currentTime;
-				byte[][] bytes = server.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
+				byte[][] bytes = servers.get(i).getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
 				
 				if(bytes != null){
 					if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
@@ -119,7 +123,11 @@ public class API {
 							currentTime = getTimestampFromKey(mapKey);
 						}else{
 							currentTime = Time.getTimeLong();
-						}
+						}	
+						
+						wts++;
+						ackList.clear();
+
 						byte[] d = Crypto.encodeBase64(
 								   Crypto.encrypt(secretKey, 
 										   Crypto.concatenateBytes(domain,Time.convertTime(currentTime))));
@@ -133,17 +141,25 @@ public class API {
 								   privateKey, 
 								   Crypto.decodeBase64(bytes[0]));
 						
+						byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, Integer.toString(wts).getBytes())); 
+										
 						saveTimestampData(new String(domain) + "||" + new String(username), currentTime);
-						
+										
 						byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
-						byte[][] returnValue = server.put(publicKey, 
+						
+						byte[] signature = Crypto.signData(privateKey, Crypto.concatenateBytes(wtsEncoded,d,u,p,token));
+						byte[][] returnValue = servers.get(i).put(
+								 publicKey, 
+								 wtsEncoded,
 								 d, 
 								 u, 
 								 p, 
 								 token,
-								 Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,p,token)));
+								 signature);
 						
-						responses.add(getFeedback(returnValue, bytes, t));
+						signatures.put(Crypto.concatenateBytes(Integer.toString(i).getBytes(), d, u), signature);
+						
+						ackList.add(getFeedback(returnValue, bytes, t));
 					}
 				}
 			}
@@ -153,20 +169,47 @@ public class API {
 	        	return -1;
 			}
 		}
-		return responses.get(0);
+		Map<Integer, Integer> counter = new HashMap<Integer, Integer>();
+		if (ackList.size() > (MAX_SERVERS + 1) / 2){
+			ackList.clear();
+			
+			for (int i = 0; i< ackList.size(); i++){
+				if (!counter.containsKey(ackList.get(i))){
+					counter.put(ackList.get(i), 1);
+				}else{
+					int count = counter.get(ackList.get(i));
+					count++;
+					counter.put(ackList.get(i), count);
+				}
+			}
+			
+			int index = -5;
+			int max = 0;
+			for (Integer key : counter.keySet()){
+				if (counter.get(key) > max){
+					max = counter.get(key);
+					index = key;
+				}
+			}
+			return index;
+		}
+		
+		return -1;
 	}
 	
 	public byte[] retrieve_password(byte[] domain, byte[] username){
-		ArrayList<byte[]> responses = new ArrayList<byte[]>();
-		for (InterfaceRMI server : servers){
+		for (int i = 0; i < servers.size(); i++){
 			try{
-				byte[][] bytes = server.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
+				byte[][] bytes = servers.get(i).getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
 				if(bytes != null){
 					if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
 					Long timestamp = getTimestampFromKey(new String(domain) + "||" + new String(username));
 					if(timestamp == null){
 						return null;
 					}
+					
+					readList.clear();
+					
 					byte[] d = Crypto.encodeBase64(
 							   Crypto.encrypt(secretKey, 
 									   Crypto.concatenateBytes(domain,Time.convertTime(timestamp))));
@@ -175,17 +218,22 @@ public class API {
 									   Crypto.concatenateBytes(username,Time.convertTime(timestamp+1))));
 					byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(bytes[0]));
 					byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
-					byte[][] returnValue = server.get(publicKey, 
+					byte[][] returnValue = servers.get(i).get(publicKey, 
 							                   d, 
 							                   u, 
 							                   token,
 							                   Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,token)));
-					
+						
 					int value = getFeedback(returnValue, bytes, t);
 					if(value == 3){
 						byte[] password = returnValue[3];
 						if(password != null){
-							responses.add(Crypto.decrypt(secretKey, Crypto.decodeBase64(password)));
+							if (Arrays.equals(returnValue[returnValue.length - 1], signatures.get(Crypto.concatenateBytes(Integer.toString(i).getBytes(), d, u)))){
+								byte[] wtsEnc = Crypto.decrypt(secretKey, Crypto.decodeBase64(returnValue[returnValue.length - 2]));
+								byte[] pw = Crypto.decrypt(secretKey, Crypto.decodeBase64(password));
+								readList.add(Token.getByteList(wtsEnc,pw));
+							}
+							
 						}
 					}
 				}
@@ -195,8 +243,22 @@ public class API {
         	e.printStackTrace();
         	}
 		}
-		return responses.get(0);
-				
+		
+		byte[] pw = null;
+		if (readList.size() > (MAX_SERVERS + 1) / 2){	
+			int max = -1;
+			for (int i = 0; i< readList.size(); i++){
+				if (Integer.parseInt(new String(readList.get(i)[0])) > max){
+					max = Integer.parseInt(new String(readList.get(i)[0]));
+					pw = readList.get(i)[1];
+				}
+			}
+		}
+		readList.clear();
+		
+		return pw;
+			
+		
 	}
 
 	public void close(){
@@ -224,39 +286,9 @@ public class API {
 		return stub;
 	}
 	*/
-		
-	@SuppressWarnings("unchecked")
-	public void loadData(){
-		try{
-			FileInputStream fileIn = new FileInputStream("src/main/resources/timestamps"+clientId+".ser");
-			ObjectInputStream in = new ObjectInputStream(fileIn);
-			timestampMap = (HashMap<String, Long>)in.readObject();
-			in.close();
-			fileIn.close();
-		}catch(FileNotFoundException f){
-			System.out.println("Timestamp data not found, not loading file...");
-		}catch(IOException e){
-			e.printStackTrace();
-		}catch(ClassNotFoundException c){
-	        c.printStackTrace();
-		}
-	}
-	
-	public void saveData(){
-		try{
-			FileOutputStream fileOut = new FileOutputStream("src/main/resources/timestamps"+clientId+".ser");
-			ObjectOutputStream out = new ObjectOutputStream(fileOut);
-			out.writeObject(timestampMap);
-			out.close();
-			fileOut.close();
-		}catch(IOException e){
-			e.printStackTrace();
-		}
-	}
 	
 	public void saveTimestampData(String key, long value){
 		timestampMap.put(key, value);
-		saveData();
 	}
 	
 	public Long getTimestampFromKey(String key){

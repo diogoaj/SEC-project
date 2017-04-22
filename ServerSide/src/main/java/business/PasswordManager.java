@@ -37,7 +37,6 @@ public class PasswordManager {
 			return false;
 		}
 		users.put((PublicKey) user.getKey(), user);
-		saveData();
 		return true;
 	}
 	
@@ -45,13 +44,16 @@ public class PasswordManager {
 		return users.get(key);
 	}
 	
-	public synchronized void addPasswordEntry(User user, byte[] d, byte[] u, byte[] password) {
-		user.addPasswordEntry(new PasswordEntry(d, u, password));
-		saveData();
+	public synchronized void addPasswordEntry(User user, byte[] d, byte[] u, byte[] password, byte[] wts) {
+		user.addPasswordEntry(new PasswordEntry(d, u, password, wts));
 	}
 	
 	public synchronized byte[] getUserPassword(User user, byte[] domain, byte[] username) {
 		return user.getPassword(domain, username);
+	}
+	
+	public synchronized byte[] getUserWts(User user, byte[] domain, byte[] username) {
+		return user.getWts(domain, username);
 	}
 	
 	public HashMap<PublicKey, User> getUsers(){
@@ -65,35 +67,4 @@ public class PasswordManager {
 	public PrivateKey getServerPrivateKey(){
 		return serverPrivateKey;
 	}
-	
-	@SuppressWarnings("unchecked")
-	public synchronized void loadData(){
-		try{
-			FileInputStream fileIn = new FileInputStream("src/main/resources/userData.ser");
-			ObjectInputStream in = new ObjectInputStream(fileIn);
-			users = (HashMap<PublicKey, User>)in.readObject();
-			in.close();
-			fileIn.close();
-		}catch(FileNotFoundException f){
-			System.out.println("User data not found, not loading file...");
-		}catch(IOException e){
-			e.printStackTrace();
-		}catch(ClassNotFoundException c){
-	        c.printStackTrace();
-		}
-	}
-	
-	public synchronized void saveData(){
-		try{
-			FileOutputStream fileOut = new FileOutputStream("src/main/resources/userData.ser");
-			ObjectOutputStream out = new ObjectOutputStream(fileOut);
-			out.writeObject(users);
-			out.close();
-			fileOut.close();
-		}catch(IOException e){
-			e.printStackTrace();
-		}
-	}
-
-
 }

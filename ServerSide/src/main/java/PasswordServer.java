@@ -16,7 +16,7 @@ public class PasswordServer{
 			registry.rebind("Interface"+Integer.parseInt(args[0]), stub);
 			System.out.println("Server is ready at port 800" + args[0]);
 			
-			i.getManager().loadData();
+			//i.getManager().loadData();
 			
 		} catch(Exception e){
 			e.printStackTrace();

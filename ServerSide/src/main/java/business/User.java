@@ -27,6 +27,7 @@ public class User implements Serializable{
 			if(Arrays.equals(userData.get(i).getDomain(), p.getDomain()) &&
 				Arrays.equals(userData.get(i).getUsername(), p.getUsername())){
 				userData.get(i).setPassword(p.getPassword());
+				userData.get(i).setWts(p.getWts());
 				System.out.println("Password Updated");
 				return;
 			}
@@ -43,6 +44,17 @@ public class User implements Serializable{
 		}
 		return null;
 	}
+	
+	public byte[] getWts(byte[] domain, byte[] username){
+		for (PasswordEntry p : userData){
+			if(Arrays.equals(p.getDomain(), domain) &&
+			   Arrays.equals(p.getUsername(), username)){
+				return p.getWts();
+			}
+		}
+		return null;
+	}
+
 	
 	public ArrayList<PasswordEntry> getData(){
 		return (ArrayList<PasswordEntry>) userData;
