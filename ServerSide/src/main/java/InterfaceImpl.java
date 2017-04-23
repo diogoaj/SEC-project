@@ -133,7 +133,7 @@ public class InterfaceImpl implements InterfaceRMI{
 		else
 			signed = Crypto.signData(manager.getServerPrivateKey(), Crypto.concatenateBytes(valueBytes,tokenBytes));
 			
-		return Token.getByteList(valueBytes, tokenBytes, signed, password, signature);
+		return Token.getByteList(valueBytes, tokenBytes, signed, password, wts, signature);
 
 	}
 	

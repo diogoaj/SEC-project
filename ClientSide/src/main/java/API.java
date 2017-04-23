@@ -111,6 +111,8 @@ public class API {
 	}
 	
 	public int save_password(byte[] domain, byte[] username, byte[] password){
+		wts++;
+		ackList.clear();
 		for (int i = 0; i < servers.size(); i++){
 			try{
 				long currentTime;
@@ -123,10 +125,8 @@ public class API {
 							currentTime = getTimestampFromKey(mapKey);
 						}else{
 							currentTime = Time.getTimeLong();
-						}	
+						}					
 						
-						wts++;
-						ackList.clear();
 
 						byte[] d = Crypto.encodeBase64(
 								   Crypto.encrypt(secretKey, 
@@ -159,6 +159,7 @@ public class API {
 						
 						signatures.put(Crypto.concatenateBytes(Integer.toString(i).getBytes(), d, u), signature);
 						
+						
 						ackList.add(getFeedback(returnValue, bytes, t));
 					}
 				}
@@ -169,9 +170,9 @@ public class API {
 	        	return -1;
 			}
 		}
+		
 		Map<Integer, Integer> counter = new HashMap<Integer, Integer>();
-		if (ackList.size() > (MAX_SERVERS + 1) / 2){
-			ackList.clear();
+		if (ackList.size() > (MAX_SERVERS + 1) / 2){	
 			
 			for (int i = 0; i< ackList.size(); i++){
 				if (!counter.containsKey(ackList.get(i))){
@@ -191,6 +192,7 @@ public class API {
 					index = key;
 				}
 			}
+	
 			return index;
 		}
 		
@@ -198,6 +200,7 @@ public class API {
 	}
 	
 	public byte[] retrieve_password(byte[] domain, byte[] username){
+		readList.clear();
 		for (int i = 0; i < servers.size(); i++){
 			try{
 				byte[][] bytes = servers.get(i).getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
@@ -207,9 +210,7 @@ public class API {
 					if(timestamp == null){
 						return null;
 					}
-					
-					readList.clear();
-					
+							
 					byte[] d = Crypto.encodeBase64(
 							   Crypto.encrypt(secretKey, 
 									   Crypto.concatenateBytes(domain,Time.convertTime(timestamp))));
@@ -233,7 +234,6 @@ public class API {
 								byte[] pw = Crypto.decrypt(secretKey, Crypto.decodeBase64(password));
 								readList.add(Token.getByteList(wtsEnc,pw));
 							}
-							
 						}
 					}
 				}
@@ -254,7 +254,6 @@ public class API {
 				}
 			}
 		}
-		readList.clear();
 		
 		return pw;
 			
@@ -301,15 +300,12 @@ public class API {
 	
 	public int getFeedback(byte[][] returnValue, byte[][] bytes, byte[] t){
 		boolean check;
-		if(returnValue.length == 4){
-			if(returnValue[3] != null)
-				check = Crypto.verifySignature(serverKey, Crypto.concatenateBytes(returnValue[0], returnValue[1], returnValue[3]), returnValue[2]);
-			else
-				check = Crypto.verifySignature(serverKey, Crypto.concatenateBytes(returnValue[0], returnValue[1]), returnValue[2]);
+		if(returnValue[3] != null){
+			check = Crypto.verifySignature(serverKey, Crypto.concatenateBytes(returnValue[0], returnValue[1], returnValue[3]), returnValue[2]);
 		}
-		else{
+		else
 			check = Crypto.verifySignature(serverKey, Crypto.concatenateBytes(returnValue[0], returnValue[1]), returnValue[2]);
-		}
+
 		if(check){
 			long returnToken = Long.valueOf(new String(Crypto.decryptRSA(privateKey, Crypto.decodeBase64(returnValue[1]))));
 			long lastToken = Long.valueOf(new String(t)) + 1;
