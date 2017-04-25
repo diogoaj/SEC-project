@@ -3,6 +3,7 @@ package main.java;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.security.Key;
+import java.util.Properties;
 
 public interface InterfaceRMI extends Remote {
     byte[][] register(Key publicKey, byte[] token, byte[] signedData) throws RemoteException;

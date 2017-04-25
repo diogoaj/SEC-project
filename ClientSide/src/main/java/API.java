@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -54,7 +55,11 @@ public class API {
 	private HashMap<byte[], byte[]> signatures = new HashMap<byte[], byte[]>();
 	
 	
+	
 	public void init(KeyStore key, String id, String pass)throws NoSuchAlgorithmException, CertificateException, IOException, NotBoundException, UnrecoverableKeyException, KeyStoreException, InvalidKeySpecException{
+		Properties props = System.getProperties();
+		props.setProperty("sun.rmi.transport.tcp.responseTimeout", "5000");
+		
 		keyStore = key;
 		password = pass;
 		clientId = id;
@@ -163,11 +168,13 @@ public class API {
 						ackList.add(getFeedback(returnValue, bytes, t));
 					}
 				}
+			}catch(java.rmi.ConnectException c){
+				System.err.println("Server with port 800" + i + " crashed...");
+			}catch(java.rmi.UnmarshalException u){
+				System.err.println("Server 800" + i + " took too long to answer...");
 			}
 			catch(Exception e){
-				System.err.println("Save password exception: " + e.toString());
-	        	e.printStackTrace();
-	        	return -1;
+				e.printStackTrace();
 			}
 		}
 		
@@ -238,10 +245,12 @@ public class API {
 					}
 				}
 			}
+		}catch(java.rmi.ConnectException c){
+			System.err.println("Server with port 800" + i + " crashed...");
 		}catch(Exception e){
-			System.err.println("Retrieve password exception: " + e.toString());
-        	e.printStackTrace();
-        	}
+			e.printStackTrace();
+		}
+        	
 		}
 		
 		byte[] pw = null;
