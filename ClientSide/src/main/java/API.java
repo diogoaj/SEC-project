@@ -264,6 +264,9 @@ public class API {
 			}
 		}
 		
+		if(pw != null)
+			save_password(domain, username, pw);
+		
 		return pw;
 			
 		
