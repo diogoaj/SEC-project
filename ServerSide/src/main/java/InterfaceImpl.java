@@ -2,6 +2,7 @@ package main.java;
 
 import java.rmi.RemoteException;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,6 +17,8 @@ public class InterfaceImpl implements InterfaceRMI{
 	private PasswordManager manager;
 	private SecureRandom rand = new SecureRandom();
 	private Map<Key, Long> tokenMap = new ConcurrentHashMap<Key, Long>();
+	
+	private Map<Key,ArrayList<byte[]>> log = new ConcurrentHashMap<Key,ArrayList<byte[]>>();
 	
 	private HashMap<byte[], byte[]> signatures = new HashMap<byte[], byte[]>();
 	
@@ -32,6 +35,9 @@ public class InterfaceImpl implements InterfaceRMI{
 			long l = rand.nextLong();
 			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA((PublicKey) publicKey, String.valueOf(l).getBytes()));
 			tokenMap.put(publicKey, l + 1);
+			
+			addToLog(publicKey, signedData);
+			
 			return Token.getByteList(token, Crypto.signData(manager.getServerPrivateKey(), token));
 		}
 		else{
@@ -47,6 +53,7 @@ public class InterfaceImpl implements InterfaceRMI{
 			if(tokenToVerify == tokenMap.get(publicKey)){
 				tokenMap.put(publicKey, (long) 0);
 				User user = new User(publicKey);
+				addToLog(publicKey, signedData);
 				boolean added = manager.addUser(user);
 				if(added)
 					return dataToSend(publicKey, 3, tokenToVerify+1, null, null, null);
@@ -73,6 +80,7 @@ public class InterfaceImpl implements InterfaceRMI{
 					tokenMap.put(publicKey, (long) 0);		
 					manager.addPasswordEntry(user,domain,username,password,wts);
 					signatures.put(Crypto.concatenateBytes(domain,username), signedData);
+					addToLog(publicKey, signedData);
 					return dataToSend(publicKey, 3, tokenToVerify+1, null, null, null);
 				}
 				else{
@@ -99,6 +107,7 @@ public class InterfaceImpl implements InterfaceRMI{
 				if(tokenToVerify == tokenMap.get(publicKey)){
 					tokenMap.put(publicKey, (long) 0);
 					byte[] signatureToSend = signatures.get(Crypto.concatenateBytes(domain,username));
+					addToLog(publicKey, signedData);
 					return dataToSend(
 							publicKey, 
 							3, 
@@ -135,6 +144,20 @@ public class InterfaceImpl implements InterfaceRMI{
 			
 		return Token.getByteList(valueBytes, tokenBytes, signed, password, wts, signature);
 
+	}
+	
+	private void addToLog(Key publicKey, byte[] signedData){
+		if(log.containsKey(publicKey)){
+			ArrayList<byte[]> temp;
+			temp = log.get(publicKey);
+			temp.add(signedData);
+			log.put(publicKey, temp);
+		}
+		else{
+			ArrayList<byte[]> temp = new ArrayList<byte[]>();
+			temp.add(signedData);
+			log.put(publicKey, temp);
+		}
 	}
 	
 }
