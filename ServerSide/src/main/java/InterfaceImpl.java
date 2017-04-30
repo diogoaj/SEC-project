@@ -75,12 +75,13 @@ public class InterfaceImpl implements InterfaceRMI{
 		byte[] t = Crypto.decryptRSA(manager.getServerPrivateKey(), Crypto.decodeBase64(token));
 		long tokenToVerify = Time.getLong(t);
 		if(user != null){
-			if(Crypto.verifySignature((PublicKey) publicKey, Crypto.concatenateBytes(wts,domain,username,password,token), signedData)){
+			if(Crypto.verifySignature((PublicKey) publicKey, Crypto.concatenateBytes(wts,domain,username,password,token), signedData)){ 
 				if(tokenToVerify == tokenMap.get(publicKey)){
 					tokenMap.put(publicKey, (long) 0);		
 					manager.addPasswordEntry(user,domain,username,password,wts);
 					signatures.put(Crypto.concatenateBytes(domain,username), signedData);
 					addToLog(publicKey, signedData);
+
 					return dataToSend(publicKey, 3, tokenToVerify+1, null, null, null);
 				}
 				else{

@@ -1,4 +1,3 @@
-/*
 package test.java;
 
 import static org.junit.Assert.*;
@@ -84,6 +83,8 @@ public class ServerPutTest {
     	String username = "user1";
     	String password = "123123";
     	
+    	int wts = 0;
+    	
     	byte[][] returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
     	
     	boolean verified = Crypto.verifySignature(pm.getServerPublicKey(), returned[0], returned[1]);
@@ -96,32 +97,34 @@ public class ServerPutTest {
 
 	    long currentTime = Time.getTimeLong();
 
-		byte[] d = Crypto.encodeBase64(
-				   Crypto.encrypt(secretKey, 
-						   Crypto.concatenateBytes(domain.getBytes(),Time.convertTime(currentTime))));
-		byte[] u = Crypto.encodeBase64(
-				   Crypto.encrypt(secretKey, 
-						   Crypto.concatenateBytes(username.getBytes(),Time.convertTime(currentTime+1))));
-		byte[] p = Crypto.encodeBase64(
-				   Crypto.encrypt(secretKey, 
-						   Crypto.concatenateBytes(password.getBytes(),"||".getBytes(),Time.convertTime(currentTime+2))));
-		t = Crypto.decryptRSA(
-				   private1, 
-				   Crypto.decodeBase64(returned[0]));
+		byte[] d = Crypto.encodeBase64(Crypto.encrypt(secretKey, 
+						               Crypto.concatenateBytes(domain.getBytes(),Time.convertTime(currentTime))));
+		byte[] u = Crypto.encodeBase64(Crypto.encrypt(secretKey, 
+						               Crypto.concatenateBytes(username.getBytes(),Time.convertTime(currentTime+1))));
+		byte[] p = Crypto.encodeBase64(Crypto.encrypt(secretKey, 
+						               Crypto.concatenateBytes(password.getBytes(),"||".getBytes(),Time.convertTime(currentTime+2))));
+		
+		t = Crypto.decryptRSA(private1, 
+				              Crypto.decodeBase64(returned[0]));
+		
+		byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, Integer.toString(wts).getBytes())); 
 		
 		
-		token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
+		token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), 
+				                    Token.nextToken(t)));
 		interfacermi.put(public1, 
+						 wtsEncoded,
 						 d, 
 						 u, 
 						 p, 
 						 token,
-						 Crypto.signData(private1, Crypto.concatenateBytes(d,u,p,token)));
+						 Crypto.signData(private1, Crypto.concatenateBytes(wtsEncoded,d,u,p,token)));
 		
+		assertEquals(1, user1.getData().size());
 		assertTrue(Arrays.equals(d, user1.getData().get(0).getDomain()));
 		assertTrue(Arrays.equals(u, user1.getData().get(0).getUsername()));
 		assertTrue(Arrays.equals(p, user1.getData().get(0).getPassword()));
-		assertEquals(user1.getData().size(), 1);
+
     }
     
     
@@ -132,6 +135,8 @@ public class ServerPutTest {
     	String domain = "facebook";
     	String username = "user1";
     	String password = "123123";
+    	
+    	int wts = 0;
     	
     	byte[][] returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
     	
@@ -157,14 +162,19 @@ public class ServerPutTest {
 				   private1, 
 				   Crypto.decodeBase64(returned[0]));
 		
+		byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, Integer.toString(wts).getBytes())); 
+		
 		
 		token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
 		interfacermi.put(public1, 
+						 wtsEncoded,
 						 d, 
 						 u, 
 						 p, 
 						 token,
-						 Crypto.signData(private1, Crypto.concatenateBytes(d,u,p,token)));
+						 Crypto.signData(private1, Crypto.concatenateBytes(wtsEncoded,d,u,p,token)));
+		
+		wts++;
 		
 		returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
     	
@@ -188,10 +198,20 @@ public class ServerPutTest {
 				   private1, 
 				   Crypto.decodeBase64(returned[0]));
 		
+		wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, Integer.toString(wts).getBytes())); 
+		
+		interfacermi.put(public1, 
+						 wtsEncoded,
+						 d, 
+						 u, 
+						 p, 
+						 token,
+						 Crypto.signData(private1, Crypto.concatenateBytes(wtsEncoded,d,u,p,token)));
+		
 		assertTrue(Arrays.equals(d, user1.getData().get(0).getDomain()));
 		assertTrue(Arrays.equals(u, user1.getData().get(0).getUsername()));
 		assertTrue(Arrays.equals(p, user1.getData().get(0).getPassword()));
-		assertEquals(user1.getData().size(), 1);
+		assertEquals(1, user1.getData().size());
     }
     
 
@@ -206,6 +226,8 @@ public class ServerPutTest {
     	String domain = "facebook";
     	String username = "user1";
     	String password = "123123";
+    	
+    	int wts = 0;
     	
     	byte[][] returned = interfacermi.getChallenge(public3, Crypto.signData(private3, public3.getEncoded()));
     	
@@ -231,14 +253,17 @@ public class ServerPutTest {
 				   private3, 
 				   Crypto.decodeBase64(returned[0]));
 		
+		byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, Integer.toString(wts).getBytes())); 
+		
 		
 		token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
 		interfacermi.put(public3, 
+				 		 wtsEncoded,
 						 d, 
 						 u, 
 						 p, 
 						 token,
-						 Crypto.signData(private3, Crypto.concatenateBytes(d,u,p,token)));
+						 Crypto.signData(private3, Crypto.concatenateBytes(wtsEncoded,d,u,p,token)));
 		
 		returned = interfacermi.getChallenge(public3, Crypto.signData(private3, public3.getEncoded()));
     	
@@ -294,6 +319,8 @@ public class ServerPutTest {
     	String domain = "facebook";
     	String username = "user1";
     	String password = "123123";
+    
+    	int wts = 0;
     	
     	byte[][] returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
     	
@@ -317,14 +344,17 @@ public class ServerPutTest {
 				   private1, 
 				   Crypto.decodeBase64(returned[0]));
 		
+		byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, Integer.toString(wts).getBytes())); 
+		
 		
 		token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
 		returned = interfacermi.put(public2, 
+									wtsEncoded,
 								    d, 
 								    u, 
 								    p, 
 								    token,
-								    Crypto.signData(private1, Crypto.concatenateBytes(d,u,p,token)));
+								    Crypto.signData(private1, Crypto.concatenateBytes(wtsEncoded,d,u,p,token)));
 		
 		// Check for the return code 1 (Invalid signature)
 		// The attacker can't actually see this message because it is ciphered with 
@@ -337,6 +367,8 @@ public class ServerPutTest {
     	String domain = "facebook";
     	String username = "user1";
     	String password = "123123";
+    	
+    	int wts = 0;
     	
     	byte[][] returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
     	
@@ -363,21 +395,27 @@ public class ServerPutTest {
 				   private1, 
 				   Crypto.decodeBase64(returned[0]));
 		
+		byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, Integer.toString(wts).getBytes())); 
+		
 		
 		token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
-		interfacermi.put(public1, 
+		interfacermi.put(public1,
+						 wtsEncoded,
 						 d, 
 						 u, 
 						 p, 
 						 token,
-						 Crypto.signData(private1, Crypto.concatenateBytes(d,u,p,token)));
+						 Crypto.signData(private1, Crypto.concatenateBytes(wtsEncoded,d,u,p,token)));
+		
+		wts++;
 		
 		returned = interfacermi.put(public1, 
+									wtsEncoded,
 									d, 
 									u, 
 									p, 
 									token,
-									Crypto.signData(private1, Crypto.concatenateBytes(d,u,p,token)));
+									Crypto.signData(private1, Crypto.concatenateBytes(wtsEncoded,d,u,p,token)));
 		
 		// After put was called two times, the return error the second time should
 		// indicate a replay attack, code 2.
@@ -386,4 +424,3 @@ public class ServerPutTest {
 		
     }
 }
-*/
