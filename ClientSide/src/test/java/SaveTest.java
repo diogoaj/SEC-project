@@ -1,4 +1,3 @@
-/*
 package test.java;
 
 import static org.junit.Assert.*;
@@ -14,6 +13,7 @@ import java.security.SecureRandom;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.List;
 
 import javax.crypto.SecretKey;
 
@@ -33,7 +33,7 @@ public class SaveTest {
 	private static PublicKey serverKey;
 	private static PublicKey publicKey;
 	private static PrivateKey privateKey;
-	private static InterfaceRMI stub;
+	private static List<InterfaceRMI> stubs;
 	private static SecureRandom rand = new SecureRandom();
 	private static SecretKey secretKey;
 	
@@ -46,7 +46,7 @@ public class SaveTest {
 		publicKey = library.getPublicKey();
 		privateKey = library.getPrivateKey();
 		serverKey = library.getServerPublicKey();
-		stub = library.getStub();
+		stubs = library.getStub();
 		secretKey = library.getSecretKey();
 		library.register_user();
 	}
@@ -68,123 +68,138 @@ public class SaveTest {
 	
 	@Test
 	public void saveWrongToken() throws Exception{
-		byte[][] bytes = stub.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
-
-		long currentTime;
-		String mapKey = new String("gmail") + "||" + new String("rito");
-		if(library.getMap().containsKey(mapKey)){
-			currentTime = library.getTimestampFromKey(mapKey);
-		}else{
-			currentTime = Time.getTimeLong();
+		for(int i = 0; i<stubs.size(); i++){
+			byte[][] bytes = stubs.get(i).getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
+	
+			long currentTime;
+			String mapKey = new String("gmail") + "||" + new String("rito");
+			if(library.getMap().containsKey(mapKey)){
+				currentTime = library.getTimestampFromKey(mapKey);
+			}else{
+				currentTime = Time.getTimeLong();
+			}
+			
+			long l = rand.nextLong();
+			byte[] t = String.valueOf(l).getBytes();
+			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+			
+			byte[] d = Crypto.encodeBase64(
+					   Crypto.encrypt(secretKey, 
+							   Crypto.concatenateBytes("gmail".getBytes(),Time.convertTime(currentTime))));
+			byte[] u = Crypto.encodeBase64(
+					   Crypto.encrypt(secretKey, 
+							   Crypto.concatenateBytes("rito".getBytes(),Time.convertTime(currentTime+1))));
+			byte[] p = Crypto.encodeBase64(
+					   Crypto.encrypt(secretKey, 
+							   Crypto.concatenateBytes("cruz".getBytes(),"||".getBytes(),Time.convertTime(currentTime+2))));
+			
+			byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, Integer.toString(library.getWts()).getBytes())); 
+			
+			byte[][] returnValue = stubs.get(i).put(publicKey, 
+					 wtsEncoded,
+					 d, 
+					 u, 
+					 p, 
+					 token,
+					 Crypto.signData(privateKey, Crypto.concatenateBytes(wtsEncoded,d,u,p,token)));
+	
+			
+			int value = library.getFeedback(returnValue, bytes, t);
+			assertEquals(value,2);
 		}
-		
-		long l = rand.nextLong();
-		byte[] t = String.valueOf(l).getBytes();
-		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
-		
-		byte[] d = Crypto.encodeBase64(
-				   Crypto.encrypt(secretKey, 
-						   Crypto.concatenateBytes("gmail".getBytes(),Time.convertTime(currentTime))));
-		byte[] u = Crypto.encodeBase64(
-				   Crypto.encrypt(secretKey, 
-						   Crypto.concatenateBytes("rito".getBytes(),Time.convertTime(currentTime+1))));
-		byte[] p = Crypto.encodeBase64(
-				   Crypto.encrypt(secretKey, 
-						   Crypto.concatenateBytes("cruz".getBytes(),"||".getBytes(),Time.convertTime(currentTime+2))));
-		byte[][] returnValue = stub.put(publicKey, 
-				 d, 
-				 u, 
-				 p, 
-				 token,
-				 Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,p,token)));
-
-		
-		int value = library.getFeedback(returnValue, bytes, t);
-		assertEquals(value,2);
 	}
 	
 	@Test
 	public void saveWrongSignature() throws Exception{
-		byte[][] bytes = stub.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
-
-		long currentTime;
-		String mapKey = new String("gmail") + "||" + new String("rito");
-		if(library.getMap().containsKey(mapKey)){
-			currentTime = library.getTimestampFromKey(mapKey);
-		}else{
-			currentTime = Time.getTimeLong();
+		for(int i = 0; i<stubs.size(); i++){
+			byte[][] bytes = stubs.get(i).getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
+	
+			long currentTime;
+			String mapKey = new String("gmail") + "||" + new String("rito");
+			if(library.getMap().containsKey(mapKey)){
+				currentTime = library.getTimestampFromKey(mapKey);
+			}else{
+				currentTime = Time.getTimeLong();
+			}
+			
+			long l = rand.nextLong();
+			byte[] t = String.valueOf(l).getBytes();
+			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+			byte[] token_wrong = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(Token.nextToken(t))));
+			
+			byte[] d = Crypto.encodeBase64(
+					   Crypto.encrypt(secretKey, 
+							   Crypto.concatenateBytes("gmail".getBytes(),Time.convertTime(currentTime))));
+			byte[] u = Crypto.encodeBase64(
+					   Crypto.encrypt(secretKey, 
+							   Crypto.concatenateBytes("rito".getBytes(),Time.convertTime(currentTime+1))));
+			byte[] p = Crypto.encodeBase64(
+					   Crypto.encrypt(secretKey, 
+							   Crypto.concatenateBytes("cruz".getBytes(),"||".getBytes(),Time.convertTime(currentTime+2))));
+			
+			byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, Integer.toString(library.getWts()).getBytes())); 
+			
+			byte[][] returnValue = stubs.get(i).put(publicKey, 
+					 wtsEncoded,
+					 d, 
+					 u, 
+					 p, 
+					 token,
+					 Crypto.signData(privateKey, Crypto.concatenateBytes(wtsEncoded,d,u,p,token_wrong)));
+	
+			
+			int value = library.getFeedback(returnValue, bytes, t);
+			assertEquals(value,1);
 		}
-		
-		long l = rand.nextLong();
-		byte[] t = String.valueOf(l).getBytes();
-		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
-		byte[] token_wrong = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(Token.nextToken(t))));
-		
-		byte[] d = Crypto.encodeBase64(
-				   Crypto.encrypt(secretKey, 
-						   Crypto.concatenateBytes("gmail".getBytes(),Time.convertTime(currentTime))));
-		byte[] u = Crypto.encodeBase64(
-				   Crypto.encrypt(secretKey, 
-						   Crypto.concatenateBytes("rito".getBytes(),Time.convertTime(currentTime+1))));
-		byte[] p = Crypto.encodeBase64(
-				   Crypto.encrypt(secretKey, 
-						   Crypto.concatenateBytes("cruz".getBytes(),"||".getBytes(),Time.convertTime(currentTime+2))));
-		byte[][] returnValue = stub.put(publicKey, 
-				 d, 
-				 u, 
-				 p, 
-				 token,
-				 Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,p,token_wrong)));
-
-		
-		int value = library.getFeedback(returnValue, bytes, t);
-		assertEquals(value,1);
 	}
 	
 	@Test
 	public void saveWrongServerSignature() throws Exception {
-		
-		byte[][] bytes = stub.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
-
-		long currentTime;
-		String mapKey = new String("gmail") + "||" + new String("rito");
-		if(library.getMap().containsKey(mapKey)){
-			currentTime = library.getTimestampFromKey(mapKey);
-		}else{
-			currentTime = Time.getTimeLong();
+		for(int i = 0; i<stubs.size(); i++){
+			byte[][] bytes = stubs.get(i).getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
+	
+			long currentTime;
+			String mapKey = new String("gmail") + "||" + new String("rito");
+			if(library.getMap().containsKey(mapKey)){
+				currentTime = library.getTimestampFromKey(mapKey);
+			}else{
+				currentTime = Time.getTimeLong();
+			}
+			
+			long l = rand.nextLong();
+			byte[] t = String.valueOf(l).getBytes();
+			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+			byte[] token_wrong = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(Token.nextToken(t))));
+			
+			byte[] d = Crypto.encodeBase64(
+					   Crypto.encrypt(secretKey, 
+							   Crypto.concatenateBytes("gmail".getBytes(),Time.convertTime(currentTime))));
+			byte[] u = Crypto.encodeBase64(
+					   Crypto.encrypt(secretKey, 
+							   Crypto.concatenateBytes("rito".getBytes(),Time.convertTime(currentTime+1))));
+			byte[] p = Crypto.encodeBase64(
+					   Crypto.encrypt(secretKey, 
+							   Crypto.concatenateBytes("cruz".getBytes(),"||".getBytes(),Time.convertTime(currentTime+2))));
+			
+			byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, Integer.toString(library.getWts()).getBytes())); 
+			
+			byte[][] returnValue = stubs.get(i).put(publicKey, 
+					 wtsEncoded,
+					 d, 
+					 u, 
+					 p, 
+					 token,
+					 Crypto.signData(privateKey, Crypto.concatenateBytes(wtsEncoded,d,u,p,token_wrong)));
+	
+			
+			long l2 = rand.nextLong();
+			byte[] t2 = String.valueOf(l2).getBytes();
+			byte[] token2 = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t2)));
+			
+			returnValue[1] = token2;
+			
+			int value = library.getFeedback(returnValue, bytes, t);
+			assertEquals(value,-1);
 		}
-		
-		long l = rand.nextLong();
-		byte[] t = String.valueOf(l).getBytes();
-		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
-		byte[] token_wrong = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(Token.nextToken(t))));
-		
-		byte[] d = Crypto.encodeBase64(
-				   Crypto.encrypt(secretKey, 
-						   Crypto.concatenateBytes("gmail".getBytes(),Time.convertTime(currentTime))));
-		byte[] u = Crypto.encodeBase64(
-				   Crypto.encrypt(secretKey, 
-						   Crypto.concatenateBytes("rito".getBytes(),Time.convertTime(currentTime+1))));
-		byte[] p = Crypto.encodeBase64(
-				   Crypto.encrypt(secretKey, 
-						   Crypto.concatenateBytes("cruz".getBytes(),"||".getBytes(),Time.convertTime(currentTime+2))));
-		byte[][] returnValue = stub.put(publicKey, 
-				 d, 
-				 u, 
-				 p, 
-				 token,
-				 Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,p,token_wrong)));
-
-		
-		long l2 = rand.nextLong();
-		byte[] t2 = String.valueOf(l2).getBytes();
-		byte[] token2 = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t2)));
-		
-		returnValue[1] = token2;
-		
-		int value = library.getFeedback(returnValue, bytes, t);
-		assertEquals(value,-1);
 	}
-
 }
-*/

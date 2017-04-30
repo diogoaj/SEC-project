@@ -276,6 +276,10 @@ public class API {
 	public PublicKey getServerPublicKey() {
 		return serverKey;
 	}
+	
+	public int getWts(){
+		return wts;
+	}
 
 	public PublicKey getPublicKey() {
 		return publicKey;
@@ -289,11 +293,9 @@ public class API {
 		return secretKey;
 	}
 	
-	/*
-	public InterfaceRMI getStub(){
-		return stub;
+	public List<InterfaceRMI> getStub(){
+		return servers;
 	}
-	*/
 	
 	public void saveTimestampData(String key, long value){
 		timestampMap.put(key, value);

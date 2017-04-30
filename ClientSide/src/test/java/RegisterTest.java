@@ -1,4 +1,3 @@
-/*
 package test.java;
 
 import static org.junit.Assert.*;
@@ -15,6 +14,7 @@ import java.security.SecureRandom;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -32,7 +32,7 @@ public class RegisterTest {
 	private static PublicKey serverKey;
 	private static PublicKey publicKey;
 	private static PrivateKey privateKey;
-	private static InterfaceRMI stub;
+	private static List<InterfaceRMI> stubs;
 	private static SecureRandom rand = new SecureRandom();
 	
 	
@@ -44,7 +44,7 @@ public class RegisterTest {
 		publicKey = library.getPublicKey();
 		privateKey = library.getPrivateKey();
 		serverKey = library.getServerPublicKey();
-		stub = library.getStub();
+		stubs = library.getStub();
 	}
 
 	@Test
@@ -65,52 +65,57 @@ public class RegisterTest {
 	
 	@Test
 	public void registerWrongToken() throws RemoteException {
-		byte[][] bytes = stub.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
-		
-		long l = rand.nextLong();
-		byte[] t = String.valueOf(l).getBytes();
-		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
-		byte[][] returnValue = stub.register(publicKey,
-			      token,
-		          Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
-		int value = library.getFeedback(returnValue, bytes, t);
-		assertEquals(value,1);
+		for(int i = 0; i<stubs.size(); i++){
+			byte[][] bytes = stubs.get(i).getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
+			
+			long l = rand.nextLong();
+			byte[] t = String.valueOf(l).getBytes();
+			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+			byte[][] returnValue = stubs.get(i).register(publicKey,
+				      token,
+			          Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
+			int value = library.getFeedback(returnValue, bytes, t);
+			assertEquals(value,1);
+		}
 	}
 	
 	@Test
 	public void registerWrongSignature() throws RemoteException {
-		byte[][] bytes = stub.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
-
-		long l = rand.nextLong();
-		byte[] t = String.valueOf(l).getBytes();
-		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
-		byte[] token_wrong = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(Token.nextToken(t))));
-		byte[][] returnValue = stub.register(publicKey,
-			      token,
-		          Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token_wrong)));
-		int value = library.getFeedback(returnValue, bytes, t);
-		assertEquals(value,0);
+		for(int i = 0; i<stubs.size(); i++){
+			byte[][] bytes = stubs.get(i).getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
+	
+			long l = rand.nextLong();
+			byte[] t = String.valueOf(l).getBytes();
+			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+			byte[] token_wrong = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(Token.nextToken(t))));
+			byte[][] returnValue = stubs.get(i).register(publicKey,
+				      token,
+			          Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token_wrong)));
+			int value = library.getFeedback(returnValue, bytes, t);
+			assertEquals(value,0);
+		}
 	}
 	
 	@Test
 	public void registerWrongServerSignature() throws RemoteException {
-		byte[][] bytes = stub.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
-		byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(bytes[0]));
-		byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
-		byte[][] returnValue = stub.register(publicKey,
-			      token,
-		          Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
-
-		long l = rand.nextLong();
-		byte[] t2 = String.valueOf(l).getBytes();
-		byte[] token2 = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t2)));
-		
-		returnValue[1] = token2;
-		
-		int value = library.getFeedback(returnValue, bytes, token);
-		
-		assertEquals(value,-1);
+		for(int i = 0; i<stubs.size(); i++){
+			byte[][] bytes = stubs.get(i).getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
+			byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(bytes[0]));
+			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+			byte[][] returnValue = stubs.get(i).register(publicKey,
+				      token,
+			          Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
+	
+			long l = rand.nextLong();
+			byte[] t2 = String.valueOf(l).getBytes();
+			byte[] token2 = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t2)));
+			
+			returnValue[1] = token2;
+			
+			int value = library.getFeedback(returnValue, bytes, token);
+			
+			assertEquals(value,-1);
+		}
 	}
 
 }
-*/
