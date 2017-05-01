@@ -82,6 +82,7 @@ public class ServerGetTest {
     	String username = "user1";
     	String password = "123123";
     	
+    	byte[] wts = Time.getTime();
     	long currentTime = Time.getTimeLong();
 
     	// Add a password entry to the user
@@ -95,7 +96,9 @@ public class ServerGetTest {
   				    Crypto.encrypt(secretKey, 
   				    Crypto.concatenateBytes(password.getBytes(),"||".getBytes(),Time.convertTime(currentTime+2))));
   		
-    	pm.getUser(public1).addPasswordEntry(new PasswordEntry(d1,u1,p1));
+  		byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, wts)); 
+  		
+    	pm.getUser(public1).addPasswordEntry(new PasswordEntry(d1,u1,p1,wtsEncoded));
     	
     	// Call get method
     	byte[][] returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
@@ -206,7 +209,9 @@ public class ServerGetTest {
     	String username = "user1";
     	String password = "123123";
     	
+    	byte[] wts = Time.getTime();
     	long currentTime = Time.getTimeLong();
+    	
 
     	// Add a password entry to the user
   		byte[] d1 = Crypto.encodeBase64(
@@ -218,8 +223,9 @@ public class ServerGetTest {
   		byte[] p1 = Crypto.encodeBase64(
   				    Crypto.encrypt(secretKey, 
   				    Crypto.concatenateBytes(password.getBytes(),"||".getBytes(),Time.convertTime(currentTime+2))));
+  		byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, wts)); 
   		
-    	pm.getUser(public1).addPasswordEntry(new PasswordEntry(d1,u1,p1));
+    	pm.getUser(public1).addPasswordEntry(new PasswordEntry(d1,u1,p1,wtsEncoded));
     	
     	// Call get method
     	byte[][] returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));

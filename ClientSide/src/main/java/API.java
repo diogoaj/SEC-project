@@ -44,7 +44,7 @@ public class API {
 	private List<InterfaceRMI> servers;
 	
 	// Algorithm
-	private int wts = 0;
+	private byte[] wts;
 	private ArrayList<Integer> ackList = new ArrayList<Integer>();
 	private ArrayList<byte[][]> readList = new ArrayList<byte[][]>();
 	
@@ -112,7 +112,7 @@ public class API {
 	}
 	
 	public int save_password(byte[] domain, byte[] username, byte[] password){
-		wts++;
+		wts = Time.getTime();
 		ackList.clear();
 		for (int i = 0; i < servers.size(); i++){
 			try{
@@ -142,7 +142,7 @@ public class API {
 								   privateKey, 
 								   Crypto.decodeBase64(bytes[0]));
 						
-						byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, Integer.toString(wts).getBytes())); 
+						byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, wts)); 
 										
 						saveTimestampData(new String(domain) + "||" + new String(username), currentTime);
 										
@@ -277,7 +277,7 @@ public class API {
 		return serverKey;
 	}
 	
-	public int getWts(){
+	public byte[] getWts(){
 		return wts;
 	}
 
