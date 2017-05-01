@@ -65,7 +65,7 @@ public class Replication {
 		signatures.clear();
 	}
 	
-	/*@Test
+	@Test
 	public void savePasswordWithOneFailure() throws Exception{
 		for(int i = 0; i<stubs.size()-1; i++){
 			byte[][] bytes = stubs.get(i).getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
@@ -329,6 +329,10 @@ public class Replication {
 		}
 		
 		assertNotNull(pw);
+		
+		String pass = new String(pw);
+		pass = pass.split("\\|\\|")[0];
+		assertEquals(pass, "cruz");
 	}
 	
 	@Test
@@ -378,8 +382,8 @@ public class Replication {
 		}
 		
 		assertNull(pw);
-	}*/
-	
+	}
+
 	@Test
 	public void retrieveandUpdate() throws Exception{
 		for(int i = 0; i<stubs.size()-1; i++){
@@ -449,7 +453,7 @@ public class Replication {
 						   Crypto.concatenateBytes("rito".getBytes(),Time.convertTime(currentTime3+1))));
 		byte[] p3 = Crypto.encodeBase64(
 				   Crypto.encrypt(secretKey, 
-						   Crypto.concatenateBytes("babnana".getBytes(),"||".getBytes(),Time.convertTime(currentTime3+2))));
+						   Crypto.concatenateBytes("banana".getBytes(),"||".getBytes(),Time.convertTime(currentTime3+2))));
 		
 		byte[] wtsEncoded3 = Crypto.encodeBase64(Crypto.encrypt(secretKey, Integer.toString(library.getWts()).getBytes())); 
 		
@@ -504,7 +508,7 @@ public class Replication {
 					else{
 						String pass = new String(readList.get(i)[1]);
 						pass = pass.split("\\|\\|")[0];
-						assertEquals(pass, "babnana");
+						assertEquals(pass, "banana");
 					}
 				}
 			}
@@ -528,6 +532,7 @@ public class Replication {
 		assertEquals(pass2, "cruz");
 		
 		byte[] pw1 = library.retrieve_password("gmail".getBytes(), "rito".getBytes());
+		readList.clear();
 		
 		for(int i = 0; i<stubs.size(); i++){
 			byte[][] bytes = stubs.get(i).getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
