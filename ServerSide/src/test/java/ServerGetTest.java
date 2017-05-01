@@ -1,4 +1,3 @@
-/*
 package test.java;
 
 import static org.junit.Assert.*;
@@ -262,4 +261,3 @@ public class ServerGetTest {
 		assertNull(returned[3]);
     }
 }
-*/
