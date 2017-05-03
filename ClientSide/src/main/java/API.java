@@ -112,8 +112,57 @@ public class API {
 	}
 	
 	public int save_password(byte[] domain, byte[] username, byte[] password){
-		wts++;
 		ackList.clear();
+		wts++;
+		/*ArrayList<Integer> wtsList = new ArrayList<Integer>();
+		for(int i = 0; i < servers.size(); i++){
+			try{
+				byte[][] bytes = servers.get(i).getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
+				if(bytes != null){
+					if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
+						byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(bytes[0]));
+						byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+						byte[] signedData = Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(),token));
+						byte[][] returned = servers.get(i).getHighestTimestamp(publicKey, token, signedData);
+						
+						if(Crypto.verifySignature(serverKey, Crypto.concatenateBytes(returned[0],returned[1]), returned[2])){
+							int size = returned.length;
+							int max = -1;
+							for(int j = 3; i<size; j++){
+								int wtsReceived = Integer.valueOf(new String(Crypto.decryptRSA(privateKey, Crypto.decodeBase64(returned[j]))));
+								if(wtsReceived > max){
+									max = wtsReceived;
+								}
+							}
+							wtsList.add(max);
+						}						
+					}
+				}
+			}catch(java.rmi.ConnectException c){
+				System.err.println("Server with port 800" + i + " crashed...");
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+		
+		Map<Integer, Integer> counter2 = new HashMap<Integer, Integer>();
+		for (int i = 0; i< wtsList.size(); i++){
+			if (!counter2.containsKey(wtsList.get(i))){
+				counter2.put(wtsList.get(i), 1);
+			}else{
+				int count = counter2.get(wtsList.get(i));
+				count++;
+				counter2.put(wtsList.get(i), count);
+			}
+		}
+		
+		wts = 0;
+		for(int i = 0; i < counter2.size(); i++){
+			if(counter2.get(wtsList.get(i)) > (MAX_SERVERS + 1) / 2){
+				wts = counter2.get(i)+1;
+			}
+		}*/
+		
 		for (int i = 0; i < servers.size(); i++){
 			try{
 				long currentTime;
@@ -174,7 +223,7 @@ public class API {
 			}
 		}
 		
-		Map<Integer, Integer> counter = new HashMap<Integer, Integer>();
+		Map<Integer, Integer> counter= new HashMap<Integer, Integer>();
 		if (ackList.size() > (MAX_SERVERS + 1) / 2){	
 			
 			for (int i = 0; i< ackList.size(); i++){
@@ -204,6 +253,7 @@ public class API {
 	
 	public byte[] retrieve_password(byte[] domain, byte[] username){
 		readList.clear();
+			
 		for (int i = 0; i < servers.size(); i++){
 			try{
 				byte[][] bytes = servers.get(i).getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
