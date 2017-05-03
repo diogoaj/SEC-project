@@ -30,7 +30,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class API {
 	
-	private static final int MAX_SERVERS = 4;
+	private int max_servers;
 	
 	private KeyStore keyStore;
 	private String clientId;
@@ -52,7 +52,7 @@ public class API {
 	
 	
 	
-	public void init(KeyStore key, String id, String pass)throws NoSuchAlgorithmException, CertificateException, IOException, NotBoundException, UnrecoverableKeyException, KeyStoreException, InvalidKeySpecException{
+	public void init(KeyStore key, String id, String pass, int faults)throws NoSuchAlgorithmException, CertificateException, IOException, NotBoundException, UnrecoverableKeyException, KeyStoreException, InvalidKeySpecException{
 		Properties props = System.getProperties();
 		props.setProperty("sun.rmi.transport.tcp.responseTimeout", "5000");
 		
@@ -60,11 +60,13 @@ public class API {
 		password = pass;
 		clientId = id;
 		
+		max_servers = 3*faults + 1;
+		
 		servers = new ArrayList<InterfaceRMI>();
 		
 		timestampMap = new HashMap<String, Long>();
 		keyStore.load(new FileInputStream("src/main/resources/keystore_" + id +".jks"), password.toCharArray());
-		for(int i = 0; i < MAX_SERVERS; i++){
+		for(int i = 0; i < max_servers; i++){
 			Registry registry = LocateRegistry.getRegistry(8000 + i);
 	    	InterfaceRMI stub = (InterfaceRMI) registry.lookup("Interface"+i);
 	    	servers.add(stub);
@@ -159,7 +161,7 @@ public class API {
 		
 		wts = 0;
 		for (Integer key : counter2.keySet()){
-			if (counter2.get(key) > (MAX_SERVERS + 1) / 2){
+			if (counter2.get(key) > (max_servers + 1) / 2){
 				wts = key + 1;
 			}
 		}
@@ -225,7 +227,7 @@ public class API {
 		}
 		
 		Map<Integer, Integer> counter= new HashMap<Integer, Integer>();
-		if (ackList.size() > (MAX_SERVERS + 1) / 2){	
+		if (ackList.size() > (max_servers + 1) / 2){	
 			
 			for (int i = 0; i< ackList.size(); i++){
 				if (!counter.containsKey(ackList.get(i))){
@@ -301,7 +303,7 @@ public class API {
 		}
 		
 		byte[] pw = null;
-		if (readList.size() > (MAX_SERVERS + 1) / 2){	
+		if (readList.size() > (max_servers + 1) / 2){	
 			int max = -1;
 			for (int i = 0; i< readList.size(); i++){
 				if (Integer.parseInt(new String(readList.get(i)[0])) > max){

@@ -11,14 +11,14 @@ public class Client {
 	
 	public static void main(String[] args) {
 		
-		if(args.length != 2){
-			System.out.println("USAGE: <KeyStoreID> <password>");
+		if(args.length != 3){
+			System.out.println("USAGE: <KeyStoreID> <password> <number_of_faults");
 			System.exit(0);
 		}
 		
 		try {
 			KeyStore ks = KeyStore.getInstance("JKS");
-        	library.init(ks, args[0], args[1]);
+        	library.init(ks, args[0], args[1], Integer.parseInt(args[2]));
 
         	System.out.println("Welcome to Password Manager!");
         	

@@ -39,7 +39,7 @@ public class InitTest{
 	public void InitTestSuccess() throws Exception {
 		API library = new API();
 		KeyStore ks = KeyStore.getInstance("JKS");
-    	library.init(ks, "0", "banana");
+    	library.init(ks, "0", "banana", 1);
     	   	
     	assertEquals(serverKey, library.getServerPublicKey());
     	assertEquals(publicKey, library.getPublicKey());
@@ -50,7 +50,7 @@ public class InitTest{
 	public void InitTestFail() throws Exception {
 		API library = new API();
 		KeyStore ks = KeyStore.getInstance("JKS");
-    	library.init(ks, "99999", "banana");
+    	library.init(ks, "99999", "banana", 1);
     	   
     	assertNull(library.getServerPublicKey());
     	assertNull(library.getPublicKey());

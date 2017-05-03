@@ -40,7 +40,7 @@ public class WtsTest {
 	public static void oneTimeSetUp() throws Exception {
 		library = new API();
 		ks = KeyStore.getInstance("JKS");
-		library.init(ks, "0", "banana");
+		library.init(ks, "0", "banana", 1);
 		publicKey = library.getPublicKey();
 		privateKey = library.getPrivateKey();
 		serverKey = library.getServerPublicKey();

@@ -40,7 +40,7 @@ public class RegisterTest {
 	public static void oneTimeSetUp() throws Exception {
 		library = new API();
 		ks = KeyStore.getInstance("JKS");
-		library.init(ks, "0", "banana");
+		library.init(ks, "0", "banana", 1);
 		publicKey = library.getPublicKey();
 		privateKey = library.getPrivateKey();
 		serverKey = library.getServerPublicKey();
@@ -51,7 +51,7 @@ public class RegisterTest {
 	public void registerSuccess() throws KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException, CertificateException, InvalidKeySpecException, IOException, NotBoundException {
 		API library2 = new API();
 		KeyStore ks2 = KeyStore.getInstance("JKS");
-		library2.init(ks2, "1", "banana");
+		library2.init(ks2, "1", "banana", 1);
 		int value = library2.register_user();
 		assertEquals(3,value);
 	}

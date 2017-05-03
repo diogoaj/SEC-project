@@ -45,7 +45,7 @@ public class SaveTest {
 	public static void oneTimeSetUp() throws Exception {
 		library = new API();
 		ks = KeyStore.getInstance("JKS");
-		library.init(ks, "0", "banana");
+		library.init(ks, "0", "banana", 1);
 		publicKey = library.getPublicKey();
 		privateKey = library.getPrivateKey();
 		serverKey = library.getServerPublicKey();
@@ -58,7 +58,7 @@ public class SaveTest {
 	public void saveWithoutRegister() throws KeyStoreException, UnrecoverableKeyException, NoSuchAlgorithmException, CertificateException, InvalidKeySpecException, IOException, NotBoundException{
 		API library2 = new API();
 		KeyStore ks2 = KeyStore.getInstance("JKS");
-		library2.init(ks2, "2", "banana");
+		library2.init(ks2, "2", "banana", 1);
 		int value = library2.save_password("facebook2".getBytes(), "user2".getBytes(), "pass2".getBytes());
 		assertEquals(value, 0);
 	}
