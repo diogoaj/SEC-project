@@ -16,26 +16,26 @@ mvn clean install compile -DskipTests
 ### To run Server:
 ```
 cd ServerSide/
-java -cp "target/classes/;../Interface/target/classes" main.java.PasswordServer
+java -cp "target/classes/;../Interface/target/classes" main.java.PasswordServer {number_of_faults}
 ```
 
 ### To run Client:
 ```
 cd ClientSide/
-java -cp "target/classes/;../Interface/target/classes" main.java.Client {keystore_id} {keystore_pass}
+java -cp "target/classes/;../Interface/target/classes" main.java.Client {keystore_id} {keystore_pass} {number_of_faults}
 ```
 
 ## With Maven ( It is possible to run with maven but the server stops right away )
 ### To run Server:
 ```
 cd ServerSide/
-mvn exec:java -Dexec.mainClass="main.java.PasswordServer"
+mvn exec:java -Dexec.mainClass="main.java.PasswordServer -Dexec.args="{number_of_faults}""
 ```
 
 ### To run Client:
 ```
 cd ClientSide/
-mvn exec:java -Dexec.mainClass="main.java.Client" -Dexec.args="{keystore_id} {keystore_password}"
+mvn exec:java -Dexec.mainClass="main.java.Client" -Dexec.args="{keystore_id} {keystore_password} {number_of_faults}"
 ```
 
 ## To run Server tests:
