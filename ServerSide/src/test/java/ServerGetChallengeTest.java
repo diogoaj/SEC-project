@@ -54,7 +54,7 @@ public class ServerGetChallengeTest {
 
     	byte[][] bytes = interfacermi.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
     	
-    	byte[] tamperedToken = String.valueOf(10001110).getBytes();
+    	byte[] tamperedToken = String.valueOf(110100100).getBytes();
     	
     	assertFalse(Crypto.verifySignature(pm.getServerPublicKey(), tamperedToken, bytes[1]));
     }

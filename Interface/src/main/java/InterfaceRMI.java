@@ -10,4 +10,5 @@ public interface InterfaceRMI extends Remote {
     byte[][] put(Key publicKey, byte[] wts, byte[] domain, byte[] username, byte[] password, byte[] token, byte[] signedData) throws RemoteException;
     byte[][] get(Key publicKey, byte[] domain, byte[] username, byte[] token, byte[] signedData) throws RemoteException;
     byte[][] getChallenge(Key publicKey, byte[] signedData) throws RemoteException;
+    byte[][] getHighestTimestamp(Key publicKey, byte[] token, byte[] signedData) throws RemoteException;
 }

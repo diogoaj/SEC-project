@@ -66,7 +66,7 @@ public class Client {
         					break;
         				
         				if(value == 3){
-        					System.out.println("Passowrd saved\n");
+        					System.out.println("Password saved\n");
         				}
         				else if(value == 2){
         					System.out.println("User token was incorrect\n");

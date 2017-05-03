@@ -83,7 +83,7 @@ public class ServerPutTest {
     	String username = "user1";
     	String password = "123123";
     	
-    	byte[] wts = Time.getTime();
+    	int wts = 0;
     	
     	byte[][] returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
     	
@@ -107,7 +107,7 @@ public class ServerPutTest {
 		t = Crypto.decryptRSA(private1, 
 				              Crypto.decodeBase64(returned[0]));
 		
-		byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, wts)); 
+		byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, String.valueOf(wts).getBytes())); 
 		
 		
 		token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), 
@@ -136,7 +136,7 @@ public class ServerPutTest {
     	String username = "user1";
     	String password = "123123";
     	
-    	byte[] wts = Time.getTime();
+    	int wts = 0;
     	
     	byte[][] returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
     	
@@ -162,7 +162,7 @@ public class ServerPutTest {
 				   private1, 
 				   Crypto.decodeBase64(returned[0]));
 		
-		byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, wts)); 
+		byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, String.valueOf(wts).getBytes()));  
 		
 		
 		token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
@@ -174,7 +174,7 @@ public class ServerPutTest {
 						 token,
 						 Crypto.signData(private1, Crypto.concatenateBytes(wtsEncoded,d,u,p,token)));
 		
-		wts = String.valueOf(Time.getTimeLong()+1).getBytes();
+		wts++;
 		
 		returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
     	
@@ -198,7 +198,7 @@ public class ServerPutTest {
 				   private1, 
 				   Crypto.decodeBase64(returned[0]));
 		
-		wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, wts)); 
+		wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, String.valueOf(wts).getBytes())); 
 		
 		interfacermi.put(public1, 
 						 wtsEncoded,
@@ -227,7 +227,7 @@ public class ServerPutTest {
     	String username = "user1";
     	String password = "123123";
     	
-    	byte[] wts = Time.getTime();
+    	int wts = 0;
     	
     	byte[][] returned = interfacermi.getChallenge(public3, Crypto.signData(private3, public3.getEncoded()));
     	
@@ -253,7 +253,7 @@ public class ServerPutTest {
 				   private3, 
 				   Crypto.decodeBase64(returned[0]));
 		
-		byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, wts)); 
+		byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, String.valueOf(wts).getBytes())); 
 		
 		
 		token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
@@ -320,7 +320,7 @@ public class ServerPutTest {
     	String username = "user1";
     	String password = "123123";
     
-    	byte[] wts = Time.getTime();
+    	int wts = 0;
     	
     	byte[][] returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
     	
@@ -344,7 +344,7 @@ public class ServerPutTest {
 				   private1, 
 				   Crypto.decodeBase64(returned[0]));
 		
-		byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, wts)); 
+		byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, String.valueOf(wts).getBytes())); 
 		
 		
 		token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
@@ -368,7 +368,7 @@ public class ServerPutTest {
     	String username = "user1";
     	String password = "123123";
     	
-    	byte[] wts = Time.getTime();
+    	int wts = 0;
     	
     	byte[][] returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
     	
@@ -395,7 +395,7 @@ public class ServerPutTest {
 				   private1, 
 				   Crypto.decodeBase64(returned[0]));
 		
-		byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, wts)); 
+		byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, String.valueOf(wts).getBytes())); 
 		
 		
 		token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
@@ -407,7 +407,7 @@ public class ServerPutTest {
 						 token,
 						 Crypto.signData(private1, Crypto.concatenateBytes(wtsEncoded,d,u,p,token)));
 		
-		wts = String.valueOf(Time.getTimeLong()+1).getBytes();
+		wts++;
 		
 		returned = interfacermi.put(public1, 
 									wtsEncoded,

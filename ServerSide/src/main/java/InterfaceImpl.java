@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.security.Key;
 import java.security.PublicKey;
+
+import main.java.business.PasswordEntry;
 import main.java.business.PasswordManager;
 import main.java.business.User;
 
@@ -39,6 +41,43 @@ public class InterfaceImpl implements InterfaceRMI{
 			addToLog(publicKey, signedData);
 			
 			return Token.getByteList(token, Crypto.signData(manager.getServerPrivateKey(), token));
+		}
+		else{
+			System.out.println("Signature failed");
+			return null;
+		}
+	}
+	
+	public byte[][] getHighestTimestamp(Key publicKey, byte[] token, byte[] signedData){
+		byte[] t = Crypto.decryptRSA(manager.getServerPrivateKey(), Crypto.decodeBase64(token));
+		long tokenToVerify = Time.getLong(t);
+		if(Crypto.verifySignature((PublicKey) publicKey, Crypto.concatenateBytes(publicKey.getEncoded(), token), signedData)){
+			if(tokenToVerify == tokenMap.get(publicKey)){		
+				tokenMap.put(publicKey, (long) 0);
+				
+				User u = manager.getUser(publicKey);
+							
+				int size = u.getData().size();
+				byte[][] dataToSend = new byte[size + 3][];
+				
+				byte[] valueBytes = String.valueOf(3).getBytes();
+				valueBytes = Crypto.encodeBase64(Crypto.encryptRSA((PublicKey) publicKey, valueBytes));
+				byte[] tokenBytes = String.valueOf(tokenToVerify + 1).getBytes();
+				tokenBytes = Crypto.encodeBase64(Crypto.encryptRSA((PublicKey) publicKey, tokenBytes));
+				byte[] signed = Crypto.signData(manager.getServerPrivateKey(), Crypto.concatenateBytes(valueBytes,tokenBytes));
+				
+				dataToSend[0] = valueBytes;
+				dataToSend[1] = tokenBytes;
+				dataToSend[2] = signed;
+
+				for (int i = 3; i < size + 3; i++){
+					dataToSend[i] = u.getData().get(i-3).getWts();
+				}
+				
+				return dataToSend;			
+			}			
+			
+			return null;
 		}
 		else{
 			System.out.println("Signature failed");

@@ -94,7 +94,7 @@ public class Replication {
 					   Crypto.encrypt(secretKey, 
 							   Crypto.concatenateBytes("cruz".getBytes(),"||".getBytes(),Time.convertTime(currentTime+2))));
 			
-			byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, library.getWts())); 
+			byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, String.valueOf(library.getWts()).getBytes())); 
 			
 			byte[] signature = Crypto.signData(privateKey, Crypto.concatenateBytes(wtsEncoded,d,u,p,token));
 			
@@ -165,7 +165,7 @@ public class Replication {
 					   Crypto.encrypt(secretKey, 
 							   Crypto.concatenateBytes("cruz".getBytes(),"||".getBytes(),Time.convertTime(currentTime+2))));
 			
-			byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, library.getWts())); 
+			byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, String.valueOf(library.getWts()).getBytes()));
 			
 			byte[] signature = Crypto.signData(privateKey, Crypto.concatenateBytes(wtsEncoded,d,u,p,token));
 			
@@ -237,7 +237,7 @@ public class Replication {
 					   Crypto.encrypt(secretKey, 
 							   Crypto.concatenateBytes("cruz".getBytes(),"||".getBytes(),Time.convertTime(currentTime+2))));
 			
-			byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, library.getWts())); 
+			byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, String.valueOf(library.getWts()).getBytes())); 
 			
 			byte[] signature = Crypto.signData(privateKey, Crypto.concatenateBytes(wtsEncoded,d,u,p,token));
 			
@@ -413,7 +413,7 @@ public class Replication {
 					   Crypto.encrypt(secretKey, 
 							   Crypto.concatenateBytes("cruz".getBytes(),"||".getBytes(),Time.convertTime(currentTime+2))));
 			
-			byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, library.getWts())); 
+			byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, String.valueOf(library.getWts()).getBytes()));
 			
 			byte[] signature = Crypto.signData(privateKey, Crypto.concatenateBytes(wtsEncoded,d,u,p,token));
 			
@@ -455,7 +455,7 @@ public class Replication {
 				   Crypto.encrypt(secretKey, 
 						   Crypto.concatenateBytes("banana".getBytes(),"||".getBytes(),Time.convertTime(currentTime3+2))));
 		
-		byte[] wtsEncoded3 = Crypto.encodeBase64(Crypto.encrypt(secretKey, library.getWts())); 
+		byte[] wtsEncoded3 = Crypto.encodeBase64(Crypto.encrypt(secretKey, String.valueOf(library.getWts()).getBytes()));
 		
 		byte[] signature3 = Crypto.signData(privateKey, Crypto.concatenateBytes(wtsEncoded3,d3,u3,p3,token3));
 		

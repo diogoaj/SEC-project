@@ -93,7 +93,7 @@ public class SaveTest {
 					   Crypto.encrypt(secretKey, 
 							   Crypto.concatenateBytes("cruz".getBytes(),"||".getBytes(),Time.convertTime(currentTime+2))));
 			
-			byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, library.getWts())); 
+			byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, String.valueOf(library.getWts()).getBytes())); 
 			
 			byte[][] returnValue = stubs.get(i).put(publicKey, 
 					 wtsEncoded,
@@ -137,7 +137,7 @@ public class SaveTest {
 					   Crypto.encrypt(secretKey, 
 							   Crypto.concatenateBytes("cruz".getBytes(),"||".getBytes(),Time.convertTime(currentTime+2))));
 			
-			byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, library.getWts())); 
+			byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, String.valueOf(library.getWts()).getBytes())); 
 			
 			byte[][] returnValue = stubs.get(i).put(publicKey, 
 					 wtsEncoded,
@@ -181,7 +181,7 @@ public class SaveTest {
 					   Crypto.encrypt(secretKey, 
 							   Crypto.concatenateBytes("cruz".getBytes(),"||".getBytes(),Time.convertTime(currentTime+2))));
 			
-			byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey,library.getWts())); 
+			byte[] wtsEncoded = Crypto.encodeBase64(Crypto.encrypt(secretKey, String.valueOf(library.getWts()).getBytes()));
 			
 			byte[][] returnValue = stubs.get(i).put(publicKey, 
 					 wtsEncoded,
