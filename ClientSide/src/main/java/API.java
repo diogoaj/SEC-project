@@ -142,7 +142,7 @@ public class API {
 					}
 				}
 			}catch(java.rmi.ConnectException c){
-				System.err.println("Server with port 800" + i + " crashed...");
+				System.err.println("Server with port " + (8000+ i)  + " crashed...");
 			}catch(Exception e){
 				e.printStackTrace();
 			}
@@ -217,9 +217,9 @@ public class API {
 					}
 				}
 			}catch(java.rmi.ConnectException c){
-				System.err.println("Server with port 800" + i + " crashed...");
+				System.err.println("Server with port " + (8000+ i) + " crashed...");
 			}catch(java.rmi.UnmarshalException u){
-				System.err.println("Server 800" + i + " took too long to answer...");
+				System.err.println("Server " + (8000+ i)  + " took too long to answer...");
 			}
 			catch(Exception e){
 				e.printStackTrace();
