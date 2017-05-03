@@ -29,7 +29,7 @@ java -cp "target/classes/;../Interface/target/classes" main.java.Client {keystor
 ### To run Server:
 ```
 cd ServerSide/
-mvn exec:java -Dexec.mainClass="main.java.PasswordServer -Dexec.args="{number_of_faults}""
+mvn exec:java -Dexec.mainClass="main.java.PasswordServer" -Dexec.args="{number_of_faults}"
 ```
 
 ### To run Client:
