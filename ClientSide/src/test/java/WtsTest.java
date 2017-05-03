@@ -67,30 +67,26 @@ public class WtsTest {
 						byte[] signedData = Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(),token));
 						byte[][] returned = stubs.get(i).getHighestTimestamp(publicKey, token, signedData);
 						
-						if(Crypto.verifySignature(serverKey, Crypto.concatenateBytes(returned[0], returned[1]), returned[2])){
+						if(Crypto.verifySignature(serverKey, Crypto.concatenateBytes(returned[0],returned[1]), returned[2])){
 							int size = returned.length;
-							//assertEquals(7,size);
 							int max = -1;
 							for(int j = 3; j<size; j++){
 								int wtsReceived = Integer.valueOf(new String(Crypto.decrypt(secretKey, Crypto.decodeBase64(returned[j]))));
-								assertEquals(j-3,wtsReceived);
 								if(wtsReceived > max){
 									max = wtsReceived;
 								}
 							}
-							wtsList.add(max);
-						}					
+							if(max != -1)
+								wtsList.add(max);
+						}						
 					}
 				}
 			}catch(java.rmi.ConnectException c){
 				System.err.println("Server with port 800" + i + " crashed...");
 			}catch(Exception e){
-				assertEquals(1000,10002);
 				e.printStackTrace();
 			}
 		}
-		
-		assertEquals(4,wtsList.size());
 		
 		Map<Integer, Integer> counter2 = new HashMap<Integer, Integer>();
 		for (int i = 0; i< wtsList.size(); i++){
@@ -104,12 +100,12 @@ public class WtsTest {
 		}
 		
 		int wts = 0;
-		for(int i = 0; i < counter2.size(); i++){
-			if(counter2.get(wtsList.get(i)) > (stubs.size() + 1) / 2){
-				wts = counter2.get(i) + 1;
+		for (Integer key : counter2.keySet()){
+			if (counter2.get(key) > (stubs.size() + 1) / 2){
+				wts = key + 1;
 			}
 		}
 		
-		//assertEquals(4,wts);
+		assertEquals(4,wts);
 	}
 }

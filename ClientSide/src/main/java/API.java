@@ -113,8 +113,8 @@ public class API {
 	
 	public int save_password(byte[] domain, byte[] username, byte[] password){
 		ackList.clear();
-		wts++;
-		/*ArrayList<Integer> wtsList = new ArrayList<Integer>();
+
+		ArrayList<Integer> wtsList = new ArrayList<Integer>();
 		for(int i = 0; i < servers.size(); i++){
 			try{
 				byte[][] bytes = servers.get(i).getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
@@ -128,13 +128,14 @@ public class API {
 						if(Crypto.verifySignature(serverKey, Crypto.concatenateBytes(returned[0],returned[1]), returned[2])){
 							int size = returned.length;
 							int max = -1;
-							for(int j = 3; i<size; j++){
-								int wtsReceived = Integer.valueOf(new String(Crypto.decryptRSA(privateKey, Crypto.decodeBase64(returned[j]))));
+							for(int j = 3; j<size; j++){
+								int wtsReceived = Integer.valueOf(new String(Crypto.decrypt(secretKey, Crypto.decodeBase64(returned[j]))));
 								if(wtsReceived > max){
 									max = wtsReceived;
 								}
 							}
-							wtsList.add(max);
+							if(max != -1)
+								wtsList.add(max);
 						}						
 					}
 				}
@@ -157,11 +158,11 @@ public class API {
 		}
 		
 		wts = 0;
-		for(int i = 0; i < counter2.size(); i++){
-			if(counter2.get(wtsList.get(i)) > (MAX_SERVERS + 1) / 2){
-				wts = counter2.get(i)+1;
+		for (Integer key : counter2.keySet()){
+			if (counter2.get(key) > (MAX_SERVERS + 1) / 2){
+				wts = key + 1;
 			}
-		}*/
+		}
 		
 		for (int i = 0; i < servers.size(); i++){
 			try{
