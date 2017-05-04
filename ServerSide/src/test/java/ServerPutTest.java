@@ -423,4 +423,84 @@ public class ServerPutTest {
 		assertTrue(pm.getUser(public1).getData().size() == 1);			
 		
     }
+    
+    
+    @Test
+    public void putMultipleWritersTest(){
+		byte[] domain = "cenas".getBytes();
+		byte[] username = "1".getBytes();
+		byte[] password = "123".getBytes();
+		byte[] wts = String.valueOf(0).getBytes();
+		
+		Thread c1 = new Thread() {
+		    public void run() {
+		    	byte[][] returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
+		    	
+		    	boolean verified = Crypto.verifySignature(pm.getServerPublicKey(), returned[0], returned[1]);
+		    	assertTrue(verified);
+		    	
+		    	byte[] t = Crypto.decryptRSA(private1, Crypto.decodeBase64(returned[0]));
+				byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
+				
+				try{
+			        interfacermi.put(public1, wts, domain, username, password, token, Crypto.signData(private1, 
+			        				 Crypto.concatenateBytes(wts,domain,username,password,token)));
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+		    }  
+		};
+		
+		Thread c2 = new Thread() {
+		    public void run() {
+		    	byte[] password = "123456".getBytes();
+		    	byte[][] returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
+		    	
+		    	boolean verified = Crypto.verifySignature(pm.getServerPublicKey(), returned[0], returned[1]);
+		    	assertTrue(verified);
+		    	
+		    	byte[] t = Crypto.decryptRSA(private1, Crypto.decodeBase64(returned[0]));
+				byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
+				
+				try{
+			        interfacermi.put(public1, wts, domain, username, password, token, Crypto.signData(private1, 
+			        				 Crypto.concatenateBytes(wts,domain,username,password,token)));
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+		    }
+		};
+		
+		Thread c3 = new Thread() {
+		    public void run() {
+		    	byte[] domain = "c".getBytes();
+				byte[] username = "2".getBytes();
+				byte[] password = "000".getBytes();
+		    	byte[] wts = String.valueOf(1).getBytes();
+		    	byte[][] returned = interfacermi.getChallenge(public1, Crypto.signData(private1, public1.getEncoded()));
+		    	
+		    	boolean verified = Crypto.verifySignature(pm.getServerPublicKey(), returned[0], returned[1]);
+		    	assertTrue(verified);
+		    	
+		    	byte[] t = Crypto.decryptRSA(private1, Crypto.decodeBase64(returned[0]));
+				byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(pm.getServerPublicKey(), Token.nextToken(t)));
+				
+				try{
+			        interfacermi.put(public1, wts, domain, username, password, token, Crypto.signData(private1, 
+			        				 Crypto.concatenateBytes(wts,domain,username,password,token)));
+				}catch(Exception e){
+					e.printStackTrace();
+				}
+		    }
+		};
+		
+		c1.run();
+		c2.run();
+		c3.run();
+		
+		User u = pm.getUser(public1);
+		assertTrue(u.getData().size() == 2);
+		assertTrue(Arrays.equals(u.getPassword("cenas".getBytes(), "1".getBytes()), "123456".getBytes()));
+		assertTrue(Arrays.equals(u.getPassword("c".getBytes(), "2".getBytes()), "000".getBytes()));	
+	}
 }
