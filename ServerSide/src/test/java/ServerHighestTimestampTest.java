@@ -39,7 +39,7 @@ public class ServerHighestTimestampTest {
     @BeforeClass
     public static void oneTimeSetUp() throws Exception {
     	keyGen = KeyPairGenerator.getInstance("RSA");
-		interfacermi = new InterfaceImpl(new PasswordManager());
+		interfacermi = new InterfaceImpl(new PasswordManager(0));
 		pm = interfacermi.getManager();
 
 		// Generate two keypairs

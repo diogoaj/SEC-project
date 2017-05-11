@@ -33,7 +33,7 @@ public class SaveTest {
 
 	private static API library;
 	private static KeyStore ks;
-	private static PublicKey serverKey;
+	private static HashMap<Integer,PublicKey> serverKey = new HashMap<Integer,PublicKey>();
 	private static PublicKey publicKey;
 	private static PrivateKey privateKey;
 	private static List<InterfaceRMI> stubs;
@@ -48,7 +48,9 @@ public class SaveTest {
 		library.init(ks, "0", "banana", 1);
 		publicKey = library.getPublicKey();
 		privateKey = library.getPrivateKey();
-		serverKey = library.getServerPublicKey();
+		for(int i = 0; i < stubs.size(); i++){
+    		serverKey.put(i, library.getServerPublicKey(i));
+    	}
 		stubs = library.getStub();
 		secretKey = library.getSecretKey();
 		library.register_user();
@@ -84,7 +86,7 @@ public class SaveTest {
 			
 			long l = rand.nextLong();
 			byte[] t = String.valueOf(l).getBytes();
-			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(t)));
 			
 			byte[] d = Crypto.encodeBase64(
 					   Crypto.encrypt(secretKey, 
@@ -107,7 +109,7 @@ public class SaveTest {
 					 Crypto.signData(privateKey, Crypto.concatenateBytes(wtsEncoded,d,u,p,token)));
 	
 			
-			int value = library.getFeedback(returnValue, bytes, t);
+			int value = library.getFeedback(returnValue, bytes, t,i);
 			assertEquals(value,2);
 		}
 	}
@@ -127,8 +129,8 @@ public class SaveTest {
 			
 			long l = rand.nextLong();
 			byte[] t = String.valueOf(l).getBytes();
-			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
-			byte[] token_wrong = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(Token.nextToken(t))));
+			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(t)));
+			byte[] token_wrong = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(Token.nextToken(t))));
 			
 			byte[] d = Crypto.encodeBase64(
 					   Crypto.encrypt(secretKey, 
@@ -151,7 +153,7 @@ public class SaveTest {
 					 Crypto.signData(privateKey, Crypto.concatenateBytes(wtsEncoded,d,u,p,token_wrong)));
 	
 			
-			int value = library.getFeedback(returnValue, bytes, t);
+			int value = library.getFeedback(returnValue, bytes, t,i);
 			assertEquals(value,1);
 		}
 	}
@@ -171,8 +173,8 @@ public class SaveTest {
 			
 			long l = rand.nextLong();
 			byte[] t = String.valueOf(l).getBytes();
-			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
-			byte[] token_wrong = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(Token.nextToken(t))));
+			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(t)));
+			byte[] token_wrong = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(Token.nextToken(t))));
 			
 			byte[] d = Crypto.encodeBase64(
 					   Crypto.encrypt(secretKey, 
@@ -197,11 +199,11 @@ public class SaveTest {
 			
 			long l2 = rand.nextLong();
 			byte[] t2 = String.valueOf(l2).getBytes();
-			byte[] token2 = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t2)));
+			byte[] token2 = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(t2)));
 			
 			returnValue[1] = token2;
 			
-			int value = library.getFeedback(returnValue, bytes, t);
+			int value = library.getFeedback(returnValue, bytes, t,i);
 			assertEquals(value,-1);
 		}
 	}	

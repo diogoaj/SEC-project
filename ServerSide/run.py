@@ -8,6 +8,16 @@ if len(sys.argv) != 2:
 	sys.exit(-1)
 
 servers = 3*int(sys.argv[1]) + 1
+
+os.chdir("..\\scripts\\")
+
+subprocess.call('sh cleanup.sh', shell=True)
+
+for i in range(servers):
+	subprocess.call('sh generate_keystore.sh server ' + str(i), shell=True)
+
+os.chdir("..\\ServerSide\\")
+
 for i in range(servers):
 	subprocess.call('start cmd /k java -cp "target/classes/;../Interface/target/classes" main.java.PasswordServer ' + str(i), shell=True)
 	time.sleep(0.5)

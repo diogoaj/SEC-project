@@ -28,7 +28,7 @@ public class WtsTest {
 
 	private static API library;
 	private static KeyStore ks;
-	private static PublicKey serverKey;
+	private static HashMap<Integer,PublicKey> serverKey = new HashMap<Integer,PublicKey>();
 	private static PublicKey publicKey;
 	private static PrivateKey privateKey;
 	private static List<InterfaceRMI> stubs;
@@ -43,7 +43,9 @@ public class WtsTest {
 		library.init(ks, "0", "banana", 1);
 		publicKey = library.getPublicKey();
 		privateKey = library.getPrivateKey();
-		serverKey = library.getServerPublicKey();
+		for(int i = 0; i < stubs.size(); i++){
+    		serverKey.put(i, library.getServerPublicKey(i));
+    	}
 		stubs = library.getStub();
 		secretKey = library.getSecretKey();
 		library.register_user();
@@ -52,7 +54,6 @@ public class WtsTest {
 		library.save_password("hotmail".getBytes(), "ewq".getBytes(), "fsad".getBytes());
 		library.save_password("adeus".getBytes(), "fds".getBytes(), "bvxc".getBytes());
 	}
-
 	
 	@Test
 	public void testWTS() throws Exception {		
@@ -61,13 +62,13 @@ public class WtsTest {
 			try{
 				byte[][] bytes = stubs.get(i).getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
 				if(bytes != null){
-					if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
+					if(Crypto.verifySignature(serverKey.get(i), bytes[0], bytes[1])){
 						byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(bytes[0]));
-						byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+						byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(t)));
 						byte[] signedData = Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(),token));
 						byte[][] returned = stubs.get(i).getHighestTimestamp(publicKey, token, signedData);
 						
-						if(Crypto.verifySignature(serverKey, Crypto.concatenateBytes(returned[0],returned[1]), returned[2])){
+						if(Crypto.verifySignature(serverKey.get(i), Crypto.concatenateBytes(returned[0],returned[1]), returned[2])){
 							int size = returned.length;
 							int max = -1;
 							for(int j = 3; j<size; j++){

@@ -27,7 +27,7 @@ public class ServerRegisterTest {
     public static void oneTimeSetUp() throws Exception {
     	keyGen = KeyPairGenerator.getInstance("RSA");
     	keyGen.initialize(2048);
-		interfacermi = new InterfaceImpl(new PasswordManager());
+		interfacermi = new InterfaceImpl(new PasswordManager(0));
 		pm = interfacermi.getManager();
     }
     

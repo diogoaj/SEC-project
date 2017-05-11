@@ -15,7 +15,7 @@ public class PasswordServer{
 		int k = Integer.parseInt(args[0]);
 			
 		try{
-			InterfaceImpl i = new InterfaceImpl(new PasswordManager());
+			InterfaceImpl i = new InterfaceImpl(new PasswordManager(k));
 			InterfaceRMI stub = (InterfaceRMI) UnicastRemoteObject.exportObject(i, 0);
 			Registry registry = LocateRegistry.createRegistry(DEFAULT_PORT + k);
 			registry.rebind("Interface"+k, stub);

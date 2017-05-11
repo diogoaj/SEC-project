@@ -14,6 +14,7 @@ import java.security.SecureRandom;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.HashMap;
 import java.util.List;
 
 import org.junit.BeforeClass;
@@ -29,7 +30,7 @@ public class RegisterTest {
 
 	private static API library;
 	private static KeyStore ks;
-	private static PublicKey serverKey;
+	private static HashMap<Integer,PublicKey> serverKey = new HashMap<Integer,PublicKey>();
 	private static PublicKey publicKey;
 	private static PrivateKey privateKey;
 	private static List<InterfaceRMI> stubs;
@@ -43,7 +44,9 @@ public class RegisterTest {
 		library.init(ks, "0", "banana", 1);
 		publicKey = library.getPublicKey();
 		privateKey = library.getPrivateKey();
-		serverKey = library.getServerPublicKey();
+		for(int i = 0; i < stubs.size(); i++){
+    		serverKey.put(i, library.getServerPublicKey(i));
+    	}
 		stubs = library.getStub();
 	}
 
@@ -70,11 +73,11 @@ public class RegisterTest {
 			
 			long l = rand.nextLong();
 			byte[] t = String.valueOf(l).getBytes();
-			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(t)));
 			byte[][] returnValue = stubs.get(i).register(publicKey,
 				      token,
 			          Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
-			int value = library.getFeedback(returnValue, bytes, t);
+			int value = library.getFeedback(returnValue, bytes, t,i);
 			assertEquals(value,1);
 		}
 	}
@@ -86,12 +89,12 @@ public class RegisterTest {
 	
 			long l = rand.nextLong();
 			byte[] t = String.valueOf(l).getBytes();
-			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
-			byte[] token_wrong = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(Token.nextToken(t))));
+			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(t)));
+			byte[] token_wrong = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(Token.nextToken(t))));
 			byte[][] returnValue = stubs.get(i).register(publicKey,
 				      token,
 			          Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token_wrong)));
-			int value = library.getFeedback(returnValue, bytes, t);
+			int value = library.getFeedback(returnValue, bytes, t,i);
 			assertEquals(value,0);
 		}
 	}
@@ -101,18 +104,18 @@ public class RegisterTest {
 		for(int i = 0; i<stubs.size(); i++){
 			byte[][] bytes = stubs.get(i).getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
 			byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(bytes[0]));
-			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(t)));
 			byte[][] returnValue = stubs.get(i).register(publicKey,
 				      token,
 			          Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
 	
 			long l = rand.nextLong();
 			byte[] t2 = String.valueOf(l).getBytes();
-			byte[] token2 = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t2)));
+			byte[] token2 = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(t2)));
 			
 			returnValue[1] = token2;
 			
-			int value = library.getFeedback(returnValue, bytes, token);
+			int value = library.getFeedback(returnValue, bytes, token,i);
 			
 			assertEquals(value,-1);
 		}

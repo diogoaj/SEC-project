@@ -6,6 +6,7 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.crypto.SecretKey;
@@ -22,7 +23,7 @@ import main.java.Token;
 public class RetrieveTest{
 	private static API library;
 	private static KeyStore ks;
-	private static PublicKey serverKey;
+	private static HashMap<Integer,PublicKey> serverKey = new HashMap<Integer,PublicKey>();
 	private static PublicKey publicKey;
 	private static PrivateKey privateKey;
 	private static List<InterfaceRMI> stubs;
@@ -37,7 +38,9 @@ public class RetrieveTest{
 		library.init(ks, "0", "banana",1);
 		publicKey = library.getPublicKey();
 		privateKey = library.getPrivateKey();
-		serverKey = library.getServerPublicKey();
+		for(int i = 0; i < stubs.size(); i++){
+    		serverKey.put(i, library.getServerPublicKey(i));
+    	}
 		stubs = library.getStub();
 		secretKey = library.getSecretKey();
 		library.register_user();
@@ -51,7 +54,7 @@ public class RetrieveTest{
 			Long timestamp = library.getTimestampFromKey(new String("gmail") + "||" + new String("rito"));
 	
 			byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(bytes[0]));
-			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(t)));
 			
 			byte[] d = Crypto.encodeBase64(
 					   Crypto.encrypt(secretKey, 
@@ -66,7 +69,7 @@ public class RetrieveTest{
 					                   token,
 					                   Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,token)));
 			
-			int value = library.getFeedback(returnValue, bytes, t);
+			int value = library.getFeedback(returnValue, bytes, t,i);
 			assertEquals(value, 3);
 		}
 	}
@@ -101,7 +104,7 @@ public class RetrieveTest{
 	
 			long l = rand.nextLong();
 			byte[] t = String.valueOf(l).getBytes();
-			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(t)));
 			
 			byte[] d = Crypto.encodeBase64(
 					   Crypto.encrypt(secretKey, 
@@ -116,7 +119,7 @@ public class RetrieveTest{
 					                   token,
 					                   Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,token)));
 		
-			int value = library.getFeedback(returnValue, bytes, t);
+			int value = library.getFeedback(returnValue, bytes, t,i);
 	
 			assertEquals(value, 2);
 		}
@@ -130,8 +133,8 @@ public class RetrieveTest{
 	
 			long l = rand.nextLong();
 			byte[] t = String.valueOf(l).getBytes();
-			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
-			byte[] token_wrong = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(Token.nextToken(t))));
+			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(t)));
+			byte[] token_wrong = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(Token.nextToken(t))));
 			
 			byte[] d = Crypto.encodeBase64(
 					   Crypto.encrypt(secretKey, 
@@ -146,7 +149,7 @@ public class RetrieveTest{
 					                   token,
 					                   Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,token_wrong)));
 			
-			int value = library.getFeedback(returnValue, bytes, t);
+			int value = library.getFeedback(returnValue, bytes, t,i);
 			assertEquals(value, 1);
 		}
 	}
@@ -159,8 +162,8 @@ public class RetrieveTest{
 	
 			long l = rand.nextLong();
 			byte[] t = String.valueOf(l).getBytes();
-			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
-			byte[] token_wrong = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(Token.nextToken(t))));
+			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(t)));
+			byte[] token_wrong = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(Token.nextToken(t))));
 			
 			byte[] d = Crypto.encodeBase64(
 					   Crypto.encrypt(secretKey, 
@@ -177,11 +180,11 @@ public class RetrieveTest{
 			
 			long l2 = rand.nextLong();
 			byte[] t2 = String.valueOf(l2).getBytes();
-			byte[] token2 = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t2)));
+			byte[] token2 = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(t2)));
 			
 			returnValue[1] = token2;
 	
-			int value = library.getFeedback(returnValue, bytes, t);
+			int value = library.getFeedback(returnValue, bytes, t,i);
 	
 			assertEquals(value, -1);
 		}

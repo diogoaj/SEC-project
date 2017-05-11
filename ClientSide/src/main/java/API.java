@@ -35,7 +35,7 @@ public class API {
 	private KeyStore keyStore;
 	private String clientId;
 	private String password;
-	private PublicKey serverKey;
+	private HashMap<Integer, PublicKey> serverKey = new HashMap<Integer, PublicKey>();
 	private PublicKey publicKey;
 	private PrivateKey privateKey;
 	private SecretKey secretKey;
@@ -71,10 +71,12 @@ public class API {
 	    	InterfaceRMI stub = (InterfaceRMI) registry.lookup("Interface"+i);
 	    	servers.add(stub);
 		}
-    	
-    	CertificateFactory f = CertificateFactory.getInstance("X.509");
-    	X509Certificate certificate = (X509Certificate)f.generateCertificate(new FileInputStream("src/main/resources/server.cer"));
-    	serverKey = certificate.getPublicKey();
+		
+		for(int i = 0; i < max_servers; i++){
+	       	CertificateFactory f = CertificateFactory.getInstance("X.509");
+	    	X509Certificate certificate = (X509Certificate)f.generateCertificate(new FileInputStream("src/main/resources/certificate_"+i+".crt"));
+	    	serverKey.put(i,certificate.getPublicKey());
+		}
     	
     	privateKey = (PrivateKey)keyStore.getKey("clientkeystore", password.toCharArray());
     	publicKey = keyStore.getCertificate("clientkeystore").getPublicKey();
@@ -88,18 +90,18 @@ public class API {
 	
 	public int register_user(){
 		ArrayList<Integer> responses = new ArrayList<Integer>();
-		for (InterfaceRMI server : servers){
+		for (int i = 0; i < max_servers; i++){
 			try{
-				byte[][] bytes = server.getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
+				byte[][] bytes = servers.get(i).getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
 				if(bytes != null){
-					if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
+					if(Crypto.verifySignature(serverKey.get(i), bytes[0], bytes[1])){
 						byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(bytes[0]));
-						byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
-						byte[][] returnValue = server.register(publicKey,
+						byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(t)));
+						byte[][] returnValue = servers.get(i).register(publicKey,
 								      token,
 							          Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(), token)));
 						
-						responses.add(getFeedback(returnValue,bytes,t));
+						responses.add(getFeedback(returnValue,bytes,t,i));
 					}
 				}		
 			}
@@ -121,13 +123,13 @@ public class API {
 			try{
 				byte[][] bytes = servers.get(i).getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
 				if(bytes != null){
-					if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
+					if(Crypto.verifySignature(serverKey.get(i), bytes[0], bytes[1])){
 						byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(bytes[0]));
-						byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+						byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(t)));
 						byte[] signedData = Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(),token));
 						byte[][] returned = servers.get(i).getHighestTimestamp(publicKey, token, signedData);
 						
-						if(Crypto.verifySignature(serverKey, Crypto.concatenateBytes(returned[0],returned[1]), returned[2])){
+						if(Crypto.verifySignature(serverKey.get(i), Crypto.concatenateBytes(returned[0],returned[1]), returned[2])){
 							int size = returned.length;
 							int max = -1;
 							for(int j = 3; j<size; j++){
@@ -172,7 +174,7 @@ public class API {
 				byte[][] bytes = servers.get(i).getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
 				
 				if(bytes != null){
-					if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
+					if(Crypto.verifySignature(serverKey.get(i), bytes[0], bytes[1])){
 						String mapKey = new String(domain) + "||" + new String(username);
 						if(timestampMap.containsKey(mapKey)){
 							currentTime = getTimestampFromKey(mapKey);
@@ -198,7 +200,7 @@ public class API {
 										
 						saveTimestampData(new String(domain) + "||" + new String(username), currentTime);
 										
-						byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+						byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(t)));
 						
 						byte[] signature = Crypto.signData(privateKey, Crypto.concatenateBytes(wtsEncoded,d,u,p,token));
 						byte[][] returnValue = servers.get(i).put(
@@ -213,7 +215,7 @@ public class API {
 						signatures.put(Crypto.concatenateBytes(Integer.toString(i).getBytes(), d, u), signature);
 						
 						
-						ackList.add(getFeedback(returnValue, bytes, t));
+						ackList.add(getFeedback(returnValue, bytes, t,i));
 					}
 				}
 			}catch(java.rmi.ConnectException c){
@@ -261,7 +263,7 @@ public class API {
 			try{
 				byte[][] bytes = servers.get(i).getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
 				if(bytes != null){
-					if(Crypto.verifySignature(serverKey, bytes[0], bytes[1])){
+					if(Crypto.verifySignature(serverKey.get(i), bytes[0], bytes[1])){
 					Long timestamp = getTimestampFromKey(new String(domain) + "||" + new String(username));
 					if(timestamp == null){
 						return null;
@@ -274,14 +276,14 @@ public class API {
 							   Crypto.encrypt(secretKey, 
 									   Crypto.concatenateBytes(username,Time.convertTime(timestamp+1))));
 					byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(bytes[0]));
-					byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+					byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(t)));
 					byte[][] returnValue = servers.get(i).get(publicKey, 
 							                   d, 
 							                   u, 
 							                   token,
 							                   Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,token)));
 						
-					int value = getFeedback(returnValue, bytes, t);
+					int value = getFeedback(returnValue, bytes, t,i);
 					if(value == 3){
 						byte[] password = returnValue[3];
 						if(password != null){
@@ -326,8 +328,8 @@ public class API {
 		System.exit(0);
 	}
 
-	public PublicKey getServerPublicKey() {
-		return serverKey;
+	public PublicKey getServerPublicKey(int i) {
+		return serverKey.get(i);
 	}
 	
 	public int getWts(){
@@ -362,13 +364,13 @@ public class API {
 		return timestampMap;
 	}
 	
-	public int getFeedback(byte[][] returnValue, byte[][] bytes, byte[] t){
+	public int getFeedback(byte[][] returnValue, byte[][] bytes, byte[] t, int i){
 		boolean check;
 		if(returnValue[3] != null){
-			check = Crypto.verifySignature(serverKey, Crypto.concatenateBytes(returnValue[0], returnValue[1], returnValue[3]), returnValue[2]);
+			check = Crypto.verifySignature(serverKey.get(i), Crypto.concatenateBytes(returnValue[0], returnValue[1], returnValue[3]), returnValue[2]);
 		}
 		else
-			check = Crypto.verifySignature(serverKey, Crypto.concatenateBytes(returnValue[0], returnValue[1]), returnValue[2]);
+			check = Crypto.verifySignature(serverKey.get(i), Crypto.concatenateBytes(returnValue[0], returnValue[1]), returnValue[2]);
 
 		if(check){
 			long returnToken = Long.valueOf(new String(Crypto.decryptRSA(privateKey, Crypto.decodeBase64(returnValue[1]))));

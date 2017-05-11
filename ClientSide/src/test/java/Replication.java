@@ -30,7 +30,7 @@ public class Replication {
 
 	private static API library;
 	private static KeyStore ks;
-	private static PublicKey serverKey;
+	private static HashMap<Integer,PublicKey> serverKey = new HashMap<Integer,PublicKey>();
 	private static PublicKey publicKey;
 	private static PrivateKey privateKey;
 	private static List<InterfaceRMI> stubs;
@@ -47,7 +47,9 @@ public class Replication {
 		library.init(ks, "0", "banana", 1);
 		publicKey = library.getPublicKey();
 		privateKey = library.getPrivateKey();
-		serverKey = library.getServerPublicKey();
+		for(int i = 0; i < stubs.size(); i++){
+    		serverKey.put(i, library.getServerPublicKey(i));
+    	}
 		stubs = library.getStub();
 		secretKey = library.getSecretKey();
 		library.register_user();
@@ -82,7 +84,7 @@ public class Replication {
 					   privateKey, 
 					   Crypto.decodeBase64(bytes[0]));
 			
-			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(t)));
 			
 			byte[] d = Crypto.encodeBase64(
 					   Crypto.encrypt(secretKey, 
@@ -107,7 +109,7 @@ public class Replication {
 					 signature);
 					
 			signatures.put(Crypto.concatenateBytes(Integer.toString(i).getBytes(), d, u), signature);
-			ackList.add(library.getFeedback(returnValue, bytes, t));
+			ackList.add(library.getFeedback(returnValue, bytes, t,i));
 		}
 		
 		int index = -5;
@@ -153,7 +155,7 @@ public class Replication {
 					   privateKey, 
 					   Crypto.decodeBase64(bytes[0]));
 			
-			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(t)));
 			
 			byte[] d = Crypto.encodeBase64(
 					   Crypto.encrypt(secretKey, 
@@ -179,7 +181,7 @@ public class Replication {
 					
 			signatures.put(Crypto.concatenateBytes(Integer.toString(i).getBytes(), d, u), signature);
 					
-			ackList.add(library.getFeedback(returnValue, bytes, t));
+			ackList.add(library.getFeedback(returnValue, bytes, t,i));
 		}
 		
 		int index = -1;
@@ -225,7 +227,7 @@ public class Replication {
 					   privateKey, 
 					   Crypto.decodeBase64(bytes[0]));
 			
-			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(t)));
 			
 			byte[] d = Crypto.encodeBase64(
 					   Crypto.encrypt(secretKey, 
@@ -251,7 +253,7 @@ public class Replication {
 					
 			signatures.put(Crypto.concatenateBytes(Integer.toString(i).getBytes(), d, u), signature);
 					
-			ackList.add(library.getFeedback(returnValue, bytes, t));
+			ackList.add(library.getFeedback(returnValue, bytes, t,i));
 		}
 		
 		ackList.add(2);
@@ -289,7 +291,7 @@ public class Replication {
 			Long timestamp = library.getTimestampFromKey(new String("gmail") + "||" + new String("rito"));
 	
 			byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(bytes[0]));
-			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(t)));
 			
 			byte[] d = Crypto.encodeBase64(
 					   Crypto.encrypt(secretKey, 
@@ -304,7 +306,7 @@ public class Replication {
 					                   token,
 					                   Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,token)));
 			
-			int value = library.getFeedback(returnValue, bytes, t);
+			int value = library.getFeedback(returnValue, bytes, t,i);
 			if(value == 3){
 				byte[] password = returnValue[3];
 				if(password != null){
@@ -342,7 +344,7 @@ public class Replication {
 			Long timestamp = library.getTimestampFromKey(new String("gmail") + "||" + new String("rito"));
 	
 			byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(bytes[0]));
-			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(t)));
 			
 			byte[] d = Crypto.encodeBase64(
 					   Crypto.encrypt(secretKey, 
@@ -357,7 +359,7 @@ public class Replication {
 					                   token,
 					                   Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,token)));
 			
-			int value = library.getFeedback(returnValue, bytes, t);
+			int value = library.getFeedback(returnValue, bytes, t,i);
 			if(value == 3){
 				byte[] password = returnValue[3];
 				if(password != null){
@@ -401,7 +403,7 @@ public class Replication {
 					   privateKey, 
 					   Crypto.decodeBase64(bytes[0]));
 			
-			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(t)));
 			
 			byte[] d = Crypto.encodeBase64(
 					   Crypto.encrypt(secretKey, 
@@ -426,7 +428,7 @@ public class Replication {
 					 signature);
 					
 			signatures.put(Crypto.concatenateBytes(Integer.toString(i).getBytes(), d, u), signature);
-			ackList.add(library.getFeedback(returnValue, bytes, t));
+			ackList.add(library.getFeedback(returnValue, bytes, t,i));
 		}
 		
 		byte[][] bytes3 = stubs.get(3).getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
@@ -443,7 +445,7 @@ public class Replication {
 				   privateKey, 
 				   Crypto.decodeBase64(bytes3[0]));
 		
-		byte[] token3 = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t3)));
+		byte[] token3 = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(3), Token.nextToken(t3)));
 		
 		byte[] d3 = Crypto.encodeBase64(
 				   Crypto.encrypt(secretKey, 
@@ -468,14 +470,14 @@ public class Replication {
 				 signature3);
 				
 		signatures.put(Crypto.concatenateBytes(Integer.toString(3).getBytes(), d3, u3), signature3);
-		ackList.add(library.getFeedback(returnValue3, bytes3, t3));
+		ackList.add(library.getFeedback(returnValue3, bytes3, t3,3));
 		
 		for(int i = 0; i<stubs.size(); i++){
 			byte[][] bytes = stubs.get(i).getChallenge(publicKey, Crypto.signData(privateKey, publicKey.getEncoded()));
 			Long timestamp = library.getTimestampFromKey(new String("gmail") + "||" + new String("rito"));
 	
 			byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(bytes[0]));
-			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(t)));
 			
 			byte[] d = Crypto.encodeBase64(
 					   Crypto.encrypt(secretKey, 
@@ -490,7 +492,7 @@ public class Replication {
 					                   token,
 					                   Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,token)));
 			
-			int value = library.getFeedback(returnValue, bytes, t);
+			int value = library.getFeedback(returnValue, bytes, t,i);
 			if(value == 3){
 				byte[] password = returnValue[3];
 				if(password != null){					
@@ -539,7 +541,7 @@ public class Replication {
 			Long timestamp = library.getTimestampFromKey(new String("gmail") + "||" + new String("rito"));
 	
 			byte[] t = Crypto.decryptRSA(privateKey, Crypto.decodeBase64(bytes[0]));
-			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey, Token.nextToken(t)));
+			byte[] token = Crypto.encodeBase64(Crypto.encryptRSA(serverKey.get(i), Token.nextToken(t)));
 			
 			byte[] d = Crypto.encodeBase64(
 					   Crypto.encrypt(secretKey, 
@@ -554,7 +556,7 @@ public class Replication {
 					                   token,
 					                   Crypto.signData(privateKey, Crypto.concatenateBytes(d,u,token)));
 			
-			int value = library.getFeedback(returnValue, bytes, t);
+			int value = library.getFeedback(returnValue, bytes, t,i);
 			if(value == 3){
 				byte[] password = returnValue[3];
 				if(password != null){					

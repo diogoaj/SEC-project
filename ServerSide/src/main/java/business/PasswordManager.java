@@ -19,11 +19,11 @@ public class PasswordManager {
 	private PublicKey serverPublicKey;
 	private PrivateKey serverPrivateKey;
 	
-	public PasswordManager(){
+	public PasswordManager(int id){
 		users = new HashMap<PublicKey, User>();
 		try{
 			KeyStore ks = KeyStore.getInstance("JKS");
-			ks.load(new FileInputStream("src/main/resources/server_keystore.jks"), "serverpass".toCharArray());
+			ks.load(new FileInputStream("src/main/resources/keystore_"+id+".jks"), "server".toCharArray());
 			serverPublicKey = ks.getCertificate("serverkeystore").getPublicKey();
 			serverPrivateKey = (PrivateKey)ks.getKey("serverkeystore", "serverpass".toCharArray());
 		}catch(Exception e){
