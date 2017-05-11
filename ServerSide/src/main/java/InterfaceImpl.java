@@ -56,25 +56,30 @@ public class InterfaceImpl implements InterfaceRMI{
 				tokenMap.put(publicKey, (long) 0);
 				
 				User u = manager.getUser(publicKey);
-							
-				int size = u.getData().size();
-				byte[][] dataToSend = new byte[size + 3][];
-				
-				byte[] valueBytes = String.valueOf(3).getBytes();
-				valueBytes = Crypto.encodeBase64(Crypto.encryptRSA((PublicKey) publicKey, valueBytes));
-				byte[] tokenBytes = String.valueOf(tokenToVerify + 1).getBytes();
-				tokenBytes = Crypto.encodeBase64(Crypto.encryptRSA((PublicKey) publicKey, tokenBytes));
-				byte[] signed = Crypto.signData(manager.getServerPrivateKey(), Crypto.concatenateBytes(valueBytes,tokenBytes));
-				
-				dataToSend[0] = valueBytes;
-				dataToSend[1] = tokenBytes;
-				dataToSend[2] = signed;
+				// For the test
+				try{
+					int size = u.getData().size();
+					byte[][] dataToSend = new byte[size + 3][];
+					
+					byte[] valueBytes = String.valueOf(3).getBytes();
+					valueBytes = Crypto.encodeBase64(Crypto.encryptRSA((PublicKey) publicKey, valueBytes));
+					byte[] tokenBytes = String.valueOf(tokenToVerify + 1).getBytes();
+					tokenBytes = Crypto.encodeBase64(Crypto.encryptRSA((PublicKey) publicKey, tokenBytes));
+					byte[] signed = Crypto.signData(manager.getServerPrivateKey(), Crypto.concatenateBytes(valueBytes,tokenBytes));
+					
+					dataToSend[0] = valueBytes;
+					dataToSend[1] = tokenBytes;
+					dataToSend[2] = signed;
 
-				for (int i = 3; i < size + 3; i++){
-					dataToSend[i] = u.getData().get(i-3).getWts();
+					for (int i = 3; i < size + 3; i++){
+						dataToSend[i] = u.getData().get(i-3).getWts();
+					}
+					
+					return dataToSend;		
+				}catch(NullPointerException e){
+					e.printStackTrace();
 				}
-				
-				return dataToSend;			
+					
 			}			
 			
 			return null;

@@ -47,10 +47,11 @@ public class Replication {
 		library.init(ks, "0", "banana", 1);
 		publicKey = library.getPublicKey();
 		privateKey = library.getPrivateKey();
+		
+		stubs = library.getStub();
 		for(int i = 0; i < stubs.size(); i++){
     		serverKey.put(i, library.getServerPublicKey(i));
     	}
-		stubs = library.getStub();
 		secretKey = library.getSecretKey();
 		library.register_user();
 		library.save_password("gmail".getBytes(), "rito".getBytes(), "cruz".getBytes());

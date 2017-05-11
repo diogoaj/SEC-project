@@ -25,7 +25,7 @@ public class PasswordManager {
 			KeyStore ks = KeyStore.getInstance("JKS");
 			ks.load(new FileInputStream("src/main/resources/keystore_"+id+".jks"), "server".toCharArray());
 			serverPublicKey = ks.getCertificate("serverkeystore").getPublicKey();
-			serverPrivateKey = (PrivateKey)ks.getKey("serverkeystore", "serverpass".toCharArray());
+			serverPrivateKey = (PrivateKey)ks.getKey("serverkeystore", "server".toCharArray());
 		}catch(Exception e){
 			e.printStackTrace();
 		}

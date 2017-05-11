@@ -26,9 +26,9 @@ public class InitTest{
 	@BeforeClass
     public static void oneTimeSetUp() throws Exception {
 		CertificateFactory f = CertificateFactory.getInstance("X.509");
-    	X509Certificate certificate = (X509Certificate)f.generateCertificate(new FileInputStream("src/main/resources/server.cer"));
     	
     	for(int i = 0; i < 4; i++){
+    		X509Certificate certificate = (X509Certificate)f.generateCertificate(new FileInputStream("src/main/resources/certificate_"+i+".crt"));
     		serverKey.put(i,certificate.getPublicKey());
     	}
     	

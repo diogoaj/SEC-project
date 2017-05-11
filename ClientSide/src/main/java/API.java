@@ -129,6 +129,9 @@ public class API {
 						byte[] signedData = Crypto.signData(privateKey, Crypto.concatenateBytes(publicKey.getEncoded(),token));
 						byte[][] returned = servers.get(i).getHighestTimestamp(publicKey, token, signedData);
 						
+						if (returned == null)
+							return -1;
+						
 						if(Crypto.verifySignature(serverKey.get(i), Crypto.concatenateBytes(returned[0],returned[1]), returned[2])){
 							int size = returned.length;
 							int max = -1;

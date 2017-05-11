@@ -44,10 +44,11 @@ public class RegisterTest {
 		library.init(ks, "0", "banana", 1);
 		publicKey = library.getPublicKey();
 		privateKey = library.getPrivateKey();
+		
+		stubs = library.getStub();
 		for(int i = 0; i < stubs.size(); i++){
     		serverKey.put(i, library.getServerPublicKey(i));
     	}
-		stubs = library.getStub();
 	}
 
 	@Test
