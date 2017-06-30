@@ -31,7 +31,7 @@ import javax.crypto.spec.SecretKeySpec;
 public class API {
 	
 	private int max_servers;
-	
+	private int faults;
 	private KeyStore keyStore;
 	private String clientId;
 	private String password;
@@ -58,7 +58,8 @@ public class API {
 		
 		keyStore = key;
 		password = pass;
-		clientId = id;
+		clientId = id;	
+		this.faults = faults;
 		
 		max_servers = 3*faults + 1;
 		
@@ -166,7 +167,7 @@ public class API {
 		
 		wts = 0;
 		for (Integer key : counter2.keySet()){
-			if (counter2.get(key) > (max_servers + 1) / 2){
+			if (counter2.get(key) > (max_servers + faults) / 2){
 				wts = key + 1;
 			}
 		}
@@ -308,7 +309,7 @@ public class API {
 		}
 		
 		byte[] pw = null;
-		if (readList.size() > (max_servers + 1) / 2){	
+		if (readList.size() > (max_servers + faults) / 2){	
 			int max = -1;
 			for (int i = 0; i< readList.size(); i++){
 				if (Integer.parseInt(new String(readList.get(i)[0])) > max){
