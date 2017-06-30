@@ -233,7 +233,7 @@ public class API {
 		}
 		
 		Map<Integer, Integer> counter= new HashMap<Integer, Integer>();
-		if (ackList.size() > (max_servers + 1) / 2){	
+		if (ackList.size() > (max_servers + faults) / 2){	
 			
 			for (int i = 0; i< ackList.size(); i++){
 				if (!counter.containsKey(ackList.get(i))){
